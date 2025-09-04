@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Explosion Shooter - 화려한 폭발 게임</title>
+    <title>Explosion Shooter - 화려한 폭발 게임 (자동 공격)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; }
         canvas { display: block; width: 100vw; height: 100vh; }
@@ -35,6 +35,7 @@
         let gameOver = false;
         let shakeTime = 0; // 화면 흔들림
         let flashTime = 0; // 플래시 효과
+        let lastShot = 0; // 마지막 발사 시간
 
         // 사운드 (실제 URL로 교체)
         const shootSound = new Audio('data:audio/wav;base64,...'); // 쏘기 사운드
@@ -76,24 +77,32 @@
             setTimeout(generateEnemy, 1000 / (1 + score / 1000)); // 난이도 증가
         }
 
-        // 입력 처리 (터치/마우스)
-        let isShooting = false;
-        canvas.addEventListener('touchstart', (e) => shoot(e.touches[0].clientX, e.touches[0].clientY));
-        canvas.addEventListener('touchmove', (e) => { player.x = e.touches[0].clientX; }); // 플레이어 이동
-        canvas.addEventListener('mousedown', (e) => shoot(e.clientX, e.clientY));
-        canvas.addEventListener('mousemove', (e) => { player.x = e.clientX; });
-
-        function shoot(targetX, targetY) {
-            if (gameOver || isShooting) return;
-            isShooting = true;
-            setTimeout(() => { isShooting = false; }, 200); // 발사 쿨타임
-            lasers.push({ x: player.x, y: player.y - 20, width: 5, height: 20, vy: -10, color: '#00FF00', trail: [] });
-            shootSound.play();
-            createParticles(player.x, player.y - 20, 20, 2, 10); // 발사 효과
+        // 자동 레이저 발사
+        function autoShoot() {
+            if (gameOver) return;
+            let now = Date.now();
+            if (now - lastShot >= 200) { // 200ms마다 발사
+                lasers.push({ x: player.x, y: player.y - 20, width: 5, height: 20, vy: -10, color: '#00FF00', trail: [] });
+                shootSound.play();
+                createParticles(player.x, player.y - 20, 20, 2, 10); // 발사 효과
+                lastShot = now;
+            }
         }
+
+        // 입력 처리 (좌우 이동만)
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 터치 스크롤 방지
+            player.x = Math.max(player.width / 2, Math.min(width - player.width / 2, e.touches[0].clientX));
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            player.x = Math.max(player.width / 2, Math.min(width - player.width / 2, e.clientX));
+        });
 
         // 게임 루프
         function update() {
+            // 자동 발사
+            autoShoot();
+
             // 배경 (우주 그라데이션 + 별 스크롤)
             let grad = ctx.createLinearGradient(0, 0, 0, height);
             grad.addColorStop(0, '#000033');
