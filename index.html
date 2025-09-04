@@ -74,7 +74,7 @@
                     enemy.vx = dx / 100 + (Math.random() - 0.5); // 약간 랜덤 + 추적
                 }
             }, 1000);
-            setTimeout(generateEnemy, 1000 / (1 + score / 1000)); // 난이도 증가
+            setTimeout(generateEnemy, 200 / (1 + score / 200)); // 난이도 증가
         }
 
         // 자동 레이저 발사
