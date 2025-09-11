@@ -1,674 +1,1007 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<title>럭키 배틀</title>
-<style>
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: linear-gradient(135deg, #a8d8ff, #ffd4e5);
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: start;
-    color: #222;
-    overflow-x: hidden;
-  }
-  h1 {
-    margin: 32px 0 12px 0;
-    font-size: 2em;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 1s ease-in;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  #game-area {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 20px rgba(100, 149, 237, 0.2);
-    margin: 20px auto;
-    border-radius: 20px;
-    padding: 25px;
-    max-width: 450px;
-    min-width: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease;
-  }
-  #game-area:hover {
-    transform: scale(1.02);
-  }
-  .status-bar {
-    margin: 15px 0 25px 0;
-    font-size: 1.1em;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-  }
-  .status-bar span {
-    padding: 10px 22px;
-    border-radius: 12px;
-    background: linear-gradient(98deg, #e4eaff88, #b8e0fc44);
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  #stage-indicator {
-    font-weight: 700;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-  #monster {
-    font-size: 2.5em;
-    margin: 10px 0 25px 0;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  }
-  #bosshp, #youratk, #yourhp {
-    font-weight: bold;
-  }
-  #info-msg {
-    min-height: 40px;
-    font-weight: bold;
-    font-size: 1.15em;
-    margin-top: 12px;
-    color: #6c439b;
-    text-align: center;
-  }
-  #btn-sections {
-    width: 100%;
-  }
-  .btn-section {
-    margin-bottom: 20px;
-  }
-  .stage-label {
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #7c5fe7;
-    margin: 8px 0 10px 3px;
-    user-select: none;
-  }
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
-  .up-btn {
-    font-size: 1.05em;
-    padding: 12px 0;
-    border-radius: 14px;
-    border: none;
-    background: linear-gradient(118deg, #fff7cc 70%, #b8e0fc 100%);
-    color: #4e2788;
-    font-weight: 700;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 110px;
-    max-width: 32vw;
-    user-select: none;
-    outline: none;
-  }
-  .up-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-  }
-  .up-btn:active {
-    background: #d8fdcc;
-    transform: translateY(0);
-  }
-  .up-btn.win {
-    background: #dcffe3;
-    color: #228E41;
-    animation: btnwin 0.7s;
-  }
-  .up-btn.lose {
-    background: #ffeded;
-    color: #cd1c47;
-    animation: btnlose 0.7s;
-  }
-  @keyframes btnwin {
-    40% { transform: scale(1.15); }
-    70% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-  }
-  @keyframes btnlose {
-    50% { transform: scale(0.9); }
-    100% { transform: scale(1); }
-  }
-  .odds {
-    font-size: 0.9em;
-    color: #639ad9;
-    font-weight: 600;
-    display: block;
-    user-select: none;
-  }
-  .opt-ch {
-    font-size: 1em;
-    color: #456baa;
-    user-select: none;
-  }
-  #fight-btn,
-  #nextstage-btn,
-  #restart-btn {
-    padding: 14px 40px;
-    border-radius: 14px;
-    font-size: 1.1em;
-    margin: 20px;
-    border: none;
-    font-weight: 700;
-    background: linear-gradient(110deg, #ffe6ec, #b8e0fc);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-    color: #41006c;
-    cursor: pointer;
-    transition: all 0.2s;
-    outline: none;
-    user-select: none;
-  }
-  #fight-btn:hover,
-  #nextstage-btn:hover,
-  #restart-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-  #fight-btn:active,
-  #nextstage-btn:active,
-  #restart-btn:active {
-    background: #f9fdff;
-    color: #4e2788;
-    transform: translateY(0);
-  }
-  .hide {
-    display: none !important;
-  }
-  .result-bar {
-    font-weight: 700;
-    font-size: 1.2em;
-    min-height: 40px;
-    margin-top: 12px;
-    text-align: center;
-    color: #4a1b7b;
-  }
-  #battle-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  #battle-panel {
-    background: #fffbea;
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.2);
-    border-radius: 25px;
-    padding: 40px 25px;
-    max-width: 400px;
-    width: 95vw;
-    text-align: center;
-    animation: modalin 0.5s ease forwards;
-    user-select: none;
-  }
-  @keyframes modalin {
-    0% { transform: scale(0.6); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  #battle-arena {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  #battle-player, #battle-monster {
-    font-size: 3em;
-    transition: transform 0.3s ease;
-  }
-  .battle-stat {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    font-size: 1.15em;
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
-  .hpbar {
-    height: 18px;
-    border-radius: 10px;
-    margin: 12px auto;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    width: 90%;
-    background: #ddd;
-    position: relative;
-  }
-  .playerbar {
-    background: linear-gradient(90deg, #43e5b4, #c2e9fb);
-    height: 100%;
-    border-radius: 10px;
-    width: 100%;
-    transition: width 0.7s ease;
-  }
-  .bossbar {
-    background: linear-gradient(90deg, #a29bfe, #fd79a8);
-    height: 100%;
-    border-radius: 10px;
-    width: 100%;
-    transition: width 0.7s ease;
-  }
-  #battle-log {
-    min-height: 60px;
-    text-align: center;
-    font-weight: bold;
-    color: #423270de;
-    max-height: 120px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    margin-top: 10px;
-  }
-  #battle-close {
-    margin-top: 15px;
-    padding: 10px 25px;
-    border-radius: 15px;
-    font-weight: 700;
-    font-size: 1.05em;
-    cursor: pointer;
-    background: #48bb78;
-    color: white;
-    border: none;
-    user-select: none;
-    outline: none;
-    transition: all 0.2s;
-  }
-  #battle-close:hover {
-    background: #43a367;
-    transform: translateY(-2px);
-  }
-  .shake {
-    animation: shake 0.5s ease;
-  }
-  .attack-move {
-    animation: attackMove 0.4s ease;
-  }
-  @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-8px); }
-    100% { transform: translateX(0); }
-  }
-  @keyframes attackMove {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(20px); }
-    100% { transform: translateX(0); }
-  }
-  .float-effect {
-    position: absolute;
-    font-weight: 700;
-    font-size: 1.4em;
-    pointer-events: none;
-    text-shadow: 0 0 10px #fff;
-    animation: floatPop 1s ease forwards;
-    white-space: nowrap;
-    user-select: none;
-    z-index: 502;
-    text-align: center;
-  }
-  .float-attack {
-    color: #d8395a;
-  }
-  .float-heal {
-    color: #44a948;
-  }
-  @keyframes floatPop {
-    0% { opacity: 0; transform: translateY(20px); }
-    60% { opacity: 1; transform: translateY(-20px); }
-    100% { opacity: 0; transform: translateY(-50px); }
-  }
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>컬러 슈터 - 수정판</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        #intro {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 36px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .intro-btn {
+            background:#007bff;color:#fff;border:none;padding:12px 26px;border-radius:6px;cursor:pointer;font-size:18px;
+        }
+
+        .game-container {
+            display:none;
+            background:white;
+            border-radius:15px;
+            padding:20px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.3);
+            max-width:960px;
+            width:100%;
+        }
+
+        .score-board {
+            text-align:center;margin-bottom:14px;font-size:20px;font-weight:bold;
+        }
+
+        .game-area {
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .target-area {
+            background:#f8f9fa;
+            border:3px solid #dee2e6;
+            border-radius:10px;
+            padding:18px;
+            min-height:220px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .target-title {
+            text-align:center;
+            font-weight:bold;
+            margin-bottom:12px;
+            color:#495057;
+        }
+
+        .target-lanes {
+            display:flex;
+            gap:10px;
+            justify-content:center;
+            align-items:flex-end;
+        }
+
+        .target-lane {
+            width:72px;
+            display:flex;
+            flex-direction:column-reverse;
+            gap:6px;
+            min-height:170px;
+            align-items:center;
+        }
+
+        .target-block {
+            width:72px;
+            height:72px;
+            border-radius:10px;
+            border:2px solid rgba(0,0,0,0.12);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            color:white;
+            text-shadow:1px 1px 2px rgba(0,0,0,0.5);
+            position:relative;
+            transition:transform .25s ease;
+        }
+
+        .target-block.attackable {
+            border:3px solid #ffeb3b;
+            box-shadow:0 0 14px rgba(255,235,59,0.35);
+            transform:translateY(-2px);
+        }
+
+        .block-number {
+            font-size:18px;
+            line-height:1;
+        }
+
+        .block-label {
+            font-size:10px;
+            opacity:0.85;
+        }
+
+        .queue-area {
+            background:#f8f9fa;
+            border:3px solid #dee2e6;
+            border-radius:10px;
+            padding:12px;
+            display:flex;
+            justify-content:center;
+            gap:16px;
+            align-items:center;
+        }
+
+        .queue-slot {
+            width:62px;
+            height:62px;
+            border-radius:8px;
+            border:2px dashed rgba(0,0,0,0.28);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:12px;
+            color:#6c757d;
+            position:relative;
+            overflow:visible;
+        }
+
+        .queue-block {
+            width:62px;
+            height:62px;
+            border-radius:8px;
+            border:2px solid rgba(0,0,0,0.28);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            color:white;
+            text-shadow:1px 1px 2px rgba(0,0,0,0.5);
+            position:relative;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .queue-block.added {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .selection-area {
+            background:#343a40;
+            border-radius:10px;
+            padding:18px;
+            color:white;
+        }
+
+        .selection-title {
+            text-align:center;
+            font-weight:bold;
+            margin-bottom:12px;
+        }
+
+        .stacks-container {
+            display:flex;
+            gap:14px;
+            justify-content:center;
+            min-height:180px;
+            align-items:flex-end;
+        }
+
+        .stack {
+            display:flex;
+            flex-direction:column-reverse;
+            gap:6px;
+            align-items:center;
+        }
+
+        .stack-block {
+            width:60px;
+            height:60px;
+            border-radius:8px;
+            border:2px solid rgba(255,255,255,0.25);
+            transition:all .18s ease;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            color:white;
+            text-shadow:1px 1px 2px rgba(0,0,0,0.45);
+        }
+
+        .stack-block.top-block {
+            border:2px solid #2ecc71;
+            cursor:pointer;
+        }
+
+        .stack-block.top-block:hover {
+            transform:scale(1.06);
+            box-shadow:0 0 12px rgba(255,255,255,0.12);
+        }
+
+        .stack-block:not(.top-block) {
+            opacity:0.75;
+            cursor:not-allowed;
+        }
+
+        /* color classes */
+        .red{background:#e74c3c}.blue{background:#3498db}.green{background:#2ecc71}.yellow{background:#f1c40f;color:#333}.purple{background:#9b59b6}
+
+        .shooting-particle {
+            position:fixed;
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            z-index:2000;
+            pointer-events:none;
+            transform:translate(-50%,-50%);
+        }
+
+        .damage-text {
+            position:fixed;
+            color:#ff4444;
+            font-weight:bold;
+            font-size:20px;
+            z-index:2001;
+            pointer-events:none;
+            animation:damageFloat 1s ease-out forwards;
+        }
+
+        @keyframes damageFloat {
+            0% { opacity:1; transform:translateY(0px) scale(1);}
+            100% { opacity:0; transform:translateY(-40px) scale(1.1);}
+        }
+
+        .game-controls {
+            text-align:center;
+            margin-top:14px;
+        }
+
+        .btn {
+            background:#007bff;
+            color:white;
+            border:none;
+            padding:10px 16px;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:15px;
+            margin:0 8px;
+        }
+
+        .message {
+            text-align:center;
+            margin-top:10px;
+            font-weight:bold;
+            min-height:22px;
+        }
+
+        .success{color:#28a745}.warning{color:#ffc107}.error{color:#dc3545}
+
+        .modal-backdrop {
+            position:fixed;
+            left:0;
+            top:0;
+            width:100vw;
+            height:100vh;
+            background:rgba(0,0,0,0.5);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            z-index:3000;
+        }
+
+        .modal {
+            background:white;
+            padding:22px;
+            border-radius:12px;
+            width:90%;
+            max-width:420px;
+            text-align:center;
+            box-shadow:0 10px 30px rgba(0,0,0,0.35);
+        }
+
+        .modal h2 {
+            margin:6px 0 10px 0;
+        }
+
+        .modal p {
+            margin:8px 0 18px 0;
+            font-size:16px;
+        }
+
+        .modal .modal-actions {
+            display:flex;
+            gap:10px;
+            justify-content:center;
+        }
+
+        @media (max-width:720px) {
+            .target-lane {
+                width:56px;
+            }
+            .target-block {
+                width:56px;height:56px
+            }
+            .queue-slot,.queue-block {
+                width:50px;
+                height:50px;
+            }
+            .stack-block {
+                width:50px;
+                height:50px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>🎲 럭키 배틀 🎲</h1>
-  <div id="stage-indicator"></div>
-  <div id="game-area">
-    <div class="status-bar">
-      <span id="youratk">공격력: 8</span>
-      <span id="yourhp">체력: 25</span>
+    <div id="intro">
+        <h1>컬러 슈터 게임 — 향상판</h1>
+        <p>색상과 숫자를 맞춰 타겟을 제거하세요! (동시 발사 · 부드러운 연출 · 난이도 증가)</p>
+        <button class="intro-btn" onclick="startIntroGame()">게임 시작</button>
     </div>
-    <div id="monster"></div>
-    <div id="bosshp"></div>
-    <div id="info-msg"></div>
-    <div id="btn-sections"></div>
-    <button id="fight-btn" class="hide">도전! (보스전)</button>
-    <div class="result-bar" id="result"></div>
-    <button id="nextstage-btn" class="hide">다음 스테이지</button>
-    <button id="restart-btn" class="hide">게임 다시하기</button>
-  </div>
 
-  <div id="battle-modal">
-    <div id="battle-panel">
-      <div id="battle-arena">
-        <div id="battle-player">😊</div>
-        <div id="battle-monster"></div>
-      </div>
-      <div class="battle-stat">
-        <span id="battle-you"></span>
-        <span id="battle-boss"></span>
-      </div>
-      <div id="battle-hp" class="hpbar playerbar"></div>
-      <div id="battle-boss-hp" class="hpbar bossbar"></div>
-      <div id="battle-log"></div>
-      <button id="battle-close" class="hide">전투 종료</button>
+    <div class="game-container" id="gameContainer">
+        <div class="score-board">
+            <span>점수: <span id="score">0</span></span>
+            <span style="margin-left:30px;">레벨: <span id="level">1</span></span>
+            <span style="margin-left:30px;">색상 수: <span id="colorCount">5</span></span>
+        </div>
+
+        <div class="game-area">
+            <div class="target-area">
+                <div class="target-title">타겟 블록들 (아래에서 위로 쌓임)</div>
+                <div class="target-lanes" id="targetLanes"></div>
+            </div>
+
+            <div class="queue-area" id="queueArea">
+                <div class="queue-slot" id="queue0">Empty</div>
+                <div class="queue-slot" id="queue1">Empty</div>
+                <div class="queue-slot" id="queue2">Empty</div>
+                <div class="queue-slot" id="queue3">Empty</div>
+            </div>
+
+            <div class="selection-area">
+                <div class="selection-title">색상 블록 선택 (맨 위만 선택 가능, 대기열 최대 4)</div>
+                <div class="stacks-container" id="stacksContainer"></div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button class="btn" onclick="resetGame()">다시 시작</button>
+            <button class="btn" onclick="game.toggleAutoMode()">자동 탐지 토글</button>
+        </div>
+
+        <div class="message" id="message"></div>
     </div>
-  </div>
 
-<script>
-const BALANCE = {
-  stages: [
-    { monster: "😺", bossHp: 25, bossAtk: 6, rows: [
-      [{ prob: 85, type: 'atk', val: 3 }, { prob: 60, type: 'hp', val: 6 }, { prob: 40, type: 'atk', val: 8 }],
-      [{ prob: 75, type: 'atk', val: 4 }, { prob: 65, type: 'hp', val: 5 }, { prob: 45, type: 'atk', val: 7 }],
-      [{ prob: 80, type: 'hp', val: 6 }, { prob: 55, type: 'atk', val: 5 }, { prob: 35, type: 'hp', val: 10 }],
-      [{ prob: 70, type: 'atk', val: 3 }, { prob: 50, type: 'hp', val: 7 }, { prob: 30, type: 'atk', val: 9 }]
-    ]},
-    { monster: "🦁", bossHp: 35, bossAtk: 8, rows: [
-      [{ prob: 80, type: 'atk', val: 5 }, { prob: 50, type: 'hp', val: 8 }, { prob: 35, type: 'atk', val: 10 }],
-      [{ prob: 70, type: 'atk', val: 6 }, { prob: 60, type: 'hp', val: 6 }, { prob: 40, type: 'atk', val: 8 }],
-      [{ prob: 75, type: 'hp', val: 7 }, { prob: 50, type: 'atk', val: 7 }, { prob: 30, type: 'hp', val: 12 }],
-      [{ prob: 65, type: 'atk', val: 4 }, { prob: 55, type: 'hp', val: 8 }, { prob: 35, type: 'atk', val: 10 }]
-    ]},
-    { monster: "🐺", bossHp: 45, bossAtk: 10, rows: [
-      [{ prob: 75, type: 'atk', val: 6 }, { prob: 45, type: 'hp', val: 10 }, { prob: 30, type: 'atk', val: 12 }],
-      [{ prob: 65, type: 'atk', val: 7 }, { prob: 55, type: 'hp', val: 8 }, { prob: 35, type: 'atk', val: 10 }],
-      [{ prob: 70, type: 'hp', val: 8 }, { prob: 50, type: 'atk', val: 8 }, { prob: 30, type: 'hp', val: 14 }],
-      [{ prob: 60, type: 'atk', val: 5 }, { prob: 50, type: 'hp', val: 9 }, { prob: 40, type: 'atk', val: 11 }]
-    ]},
-    { monster: "🦖", bossHp: 55, bossAtk: 12, rows: [
-      [{ prob: 70, type: 'atk', val: 7 }, { prob: 40, type: 'hp', val: 12 }, { prob: 30, type: 'atk', val: 14 }],
-      [{ prob: 60, type: 'atk', val: 8 }, { prob: 50, type: 'hp', val: 10 }, { prob: 35, type: 'atk', val: 12 }],
-      [{ prob: 65, type: 'hp', val: 9 }, { prob: 45, type: 'atk', val: 9 }, { prob: 30, type: 'hp', val: 15 }],
-      [{ prob: 55, type: 'atk', val: 6 }, { prob: 45, type: 'hp', val: 10 }, { prob: 35, type: 'atk', val: 13 }]
-    ]},
-    { monster: "🐉", bossHp: 70, bossAtk: 14, rows: [
-      [{ prob: 65, type: 'atk', val: 8 }, { prob: 40, type: 'hp', val: 13 }, { prob: 25, type: 'atk', val: 16 }],
-      [{ prob: 60, type: 'atk', val: 9 }, { prob: 45, type: 'hp', val: 11 }, { prob: 30, type: 'atk', val: 14 }],
-      [{ prob: 60, type: 'hp', val: 10 }, { prob: 40, type: 'atk', val: 10 }, { prob: 25, type: 'hp', val: 16 }],
-      [{ prob: 55, type: 'atk', val: 7 }, { prob: 40, type: 'hp', val: 11 }, { prob: 30, type: 'atk', val: 15 }]
-    ]},
-    { monster: "👹", bossHp: 85, bossAtk: 16, rows: [
-      [{ prob: 60, type: 'atk', val: 9 }, { prob: 35, type: 'hp', val: 14 }, { prob: 25, type: 'atk', val: 18 }],
-      [{ prob: 55, type: 'atk', val: 10 }, { prob: 40, type: 'hp', val: 12 }, { prob: 30, type: 'atk', val: 16 }],
-      [{ prob: 60, type: 'hp', val: 11 }, { prob: 35, type: 'atk', val: 11 }, { prob: 25, type: 'hp', val: 18 }],
-      [{ prob: 50, type: 'atk', val: 8 }, { prob: 35, type: 'hp', val: 12 }, { prob: 30, type: 'atk', val: 17 }]
-    ]},
-    { monster: "🧙‍♂️", bossHp: 100, bossAtk: 18, rows: [
-      [{ prob: 55, type: 'atk', val: 10 }, { prob: 35, type: 'hp', val: 15 }, { prob: 20, type: 'atk', val: 20 }],
-      [{ prob: 50, type: 'atk', val: 11 }, { prob: 40, type: 'hp', val: 13 }, { prob: 25, type: 'atk', val: 18 }],
-      [{ prob: 55, type: 'hp', val: 12 }, { prob: 35, type: 'atk', val: 12 }, { prob: 20, type: 'hp', val: 20 }],
-      [{ prob: 50, type: 'atk', val: 9 }, { prob: 35, type: 'hp', val: 13 }, { prob: 25, type: 'atk', val: 19 }]
-    ]},
-    { monster: "🦇", bossHp: 120, bossAtk: 20, rows: [
-      [{ prob: 50, type: 'atk', val: 11 }, { prob: 30, type: 'hp', val: 16 }, { prob: 20, type: 'atk', val: 22 }],
-      [{ prob: 45, type: 'atk', val: 12 }, { prob: 35, type: 'hp', val: 14 }, { prob: 25, type: 'atk', val: 20 }],
-      [{ prob: 50, type: 'hp', val: 13 }, { prob: 30, type: 'atk', val: 13 }, { prob: 20, type: 'hp', val: 22 }],
-      [{ prob: 45, type: 'atk', val: 10 }, { prob: 30, type: 'hp', val: 14 }, { prob: 25, type: 'atk', val: 21 }]
-    ]},
-    { monster: "🕸️", bossHp: 140, bossAtk: 22, rows: [
-      [{ prob: 45, type: 'atk', val: 12 }, { prob: 30, type: 'hp', val: 17 }, { prob: 20, type: 'atk', val: 24 }],
-      [{ prob: 40, type: 'atk', val: 13 }, { prob: 35, type: 'hp', val: 15 }, { prob: 20, type: 'atk', val: 22 }],
-      [{ prob: 45, type: 'hp', val: 14 }, { prob: 30, type: 'atk', val: 14 }, { prob: 20, type: 'hp', val: 24 }],
-      [{ prob: 40, type: 'atk', val: 11 }, { prob: 30, type: 'hp', val: 15 }, { prob: 20, type: 'atk', val: 23 }]
-    ]},
-    { monster: "👻", bossHp: 160, bossAtk: 24, rows: [
-      [{ prob: 40, type: 'atk', val: 13 }, { prob: 25, type: 'hp', val: 18 }, { prob: 15, type: 'atk', val: 26 }],
-      [{ prob: 35, type: 'atk', val: 14 }, { prob: 30, type: 'hp', val: 16 }, { prob: 20, type: 'atk', val: 24 }],
-      [{ prob: 40, type: 'hp', val: 15 }, { prob: 25, type: 'atk', val: 15 }, { prob: 15, type: 'hp', val: 26 }],
-      [{ prob: 35, type: 'atk', val: 12 }, { prob: 25, type: 'hp', val: 16 }, { prob: 20, type: 'atk', val: 25 }]
-    ]},
-    { monster: "🧝‍♀️", bossHp: 180, bossAtk: 26, rows: [
-      [{ prob: 35, type: 'atk', val: 14 }, { prob: 25, type: 'hp', val: 19 }, { prob: 15, type: 'atk', val: 28 }],
-      [{ prob: 30, type: 'atk', val: 15 }, { prob: 25, type: 'hp', val: 17 }, { prob: 15, type: 'atk', val: 26 }],
-      [{ prob: 35, type: 'hp', val: 16 }, { prob: 20, type: 'atk', val: 16 }, { prob: 15, type: 'hp', val: 28 }],
-      [{ prob: 30, type: 'atk', val: 13 }, { prob: 20, type: 'hp', val: 17 }, { prob: 15, type: 'atk', val: 27 }]
-    ]},
-    { monster: "😈", bossHp: 200, bossAtk: 28, rows: [
-      [{ prob: 30, type: 'atk', val: 15 }, { prob: 20, type: 'hp', val: 20 }, { prob: 10, type: 'atk', val: 30 }],
-      [{ prob: 25, type: 'atk', val: 16 }, { prob: 20, type: 'hp', val: 18 }, { prob: 15, type: 'atk', val: 28 }],
-      [{ prob: 30, type: 'hp', val: 17 }, { prob: 20, type: 'atk', val: 17 }, { prob: 10, type: 'hp', val: 30 }],
-      [{ prob: 25, type: 'atk', val: 14 }, { prob: 20, type: 'hp', val: 18 }, { prob: 15, type: 'atk', val: 29 }]
-    ]}
-  ],
-  startAtk: 8,
-  startHp: 25
-};
+    <div id="modalRoot"></div>
 
-let nowStage = 0, yourAtk = BALANCE.startAtk, yourHp = BALANCE.startHp, bossHp = 0, bossAtk = 0;
+    <script>
+        class ColorShooterGame {
+            constructor() {
+                this.fullColorPool = ['red', 'blue', 'green', 'yellow', 'purple'];
+                this.colorCount = 5;
+                this.colors = this.fullColorPool.slice(0, this.colorCount);
+                this.targetNumbers = [15, 30, 45, 60];
+                this.stackNumbers = [15, 30];
+                this.score = 0;
+                this.level = 1;
+                this.targetLanes = [[], [], [], []];
+                this.stacks = [];
+                this.attackQueue = [null, null, null, null];
+                this.gameRunning = false;
+                this.autoMode = true;
+                this.matchCountSinceColorIncrease = 0;
+                this._queueScanTimer = null;
+            }
 
-const stageDiv = document.getElementById("stage-indicator");
-const yourAtkSpan = document.getElementById("youratk");
-const yourHpSpan = document.getElementById("yourhp");
-const monsterDiv = document.getElementById("monster");
-const bossHpDiv = document.getElementById("bosshp");
-const btnSections = document.getElementById("btn-sections");
-const fightBtn = document.getElementById("fight-btn");
-const infoMsg = document.getElementById("info-msg");
-const nextBtn = document.getElementById("nextstage-btn");
-const restartBtn = document.getElementById("restart-btn");
-const resultDiv = document.getElementById("result");
+            initGame() {
+                console.log('initGame: Initializing game state');
+                this.stopQueueScanLoop();
+                this.score = 0;
+                this.level = 1;
+                this.colorCount = 5;
+                this.colors = this.fullColorPool.slice(0, this.colorCount);
+                this.matchCountSinceColorIncrease = 0;
+                this.attackQueue = [null, null, null, null];
+                this.targetLanes = [[], [], [], []];
+                this.stacks = [];
+                this.gameRunning = false;
 
-const battleModal = document.getElementById("battle-modal");
-const battlePanel = document.getElementById("battle-panel");
-const battlePlayer = document.getElementById("battle-player");
-const battleMonster = document.getElementById("battle-monster");
-const battleYou = document.getElementById("battle-you");
-const battleBoss = document.getElementById("battle-boss");
-const battleLog = document.getElementById("battle-log");
-const battleClose = document.getElementById("battle-close");
-const battleHP = document.getElementById("battle-hp");
-const battleBossHP = document.getElementById("battle-boss-hp");
+                this.generateTargetLanes();
+                this.generateStacks();
+                this.ensureInitialMatch();
+                this.updateDisplay();
+                console.log('initGame: Game initialized', { stacks: this.stacks, colors: this.colors, gameRunning: this.gameRunning });
+            }
 
-function play(key) {
-  const files = {
-    win: 'https://actions.google.com/sounds/v1/cartoon/chime_up.ogg',
-    lose: 'https://actions.google.com/sounds/v1/cartoon/negative_beeps.ogg',
-    select: 'https://actions.google.com/sounds/v1/ui/click_soft.ogg',
-    fight: 'https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg',
-    victory: 'https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg',
-    defeat: 'https://actions.google.com/sounds/v1/cartoon/drop_warning.ogg',
-    attack: 'https://actions.google.com/sounds/v1/impacts/punch_to_body_1.ogg'
-  };
-  if (files[key]) {
-    let audio = new Audio(files[key]);
-    audio.volume = 0.45;
-    audio.play().catch(() => {});
-  }
-}
+            generateTargetLanes() {
+                for (let lane = 0; lane < 4; lane++) {
+                    this.targetLanes[lane] = [];
+                    const blockCount = 4;
+                    for (let i = 0; i < blockCount; i++) {
+                        const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                        const number = this.targetNumbers[Math.floor(Math.random() * this.targetNumbers.length)];
+                        this.targetLanes[lane].push({ color, number, id: Date.now() + lane * 1000 + i });
+                    }
+                }
+                console.log('generateTargetLanes: Generated lanes', this.targetLanes);
+            }
 
-function startGame() {
-  nowStage = 0;
-  yourAtk = BALANCE.startAtk;
-  yourHp = BALANCE.startHp;
-  resultDiv.textContent = "";
-  nextBtn.classList.add("hide");
-  restartBtn.classList.add("hide");
-  fightBtn.classList.add("hide");
-  battleModal.style.display = "none";
-  loadStage();
-}
+            generateStacks() {
+                this.stacks = [];
+                for (let s = 0; s < 3; s++) {
+                    const stack = [];
+                    const stackHeight = 5;
+                    for (let j = 0; j < stackHeight; j++) {
+                        const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                        const number = this.stackNumbers[Math.floor(Math.random() * this.stackNumbers.length)];
+                        stack.push({ color, number, id: Date.now() + s * 100 + j });
+                    }
+                    this.stacks.push(stack);
+                }
+                console.log('generateStacks: Generated stacks', this.stacks);
+            }
 
-function loadStage() {
-  const st = BALANCE.stages[nowStage];
-  stageDiv.textContent = `스테이지 ${nowStage + 1} / ${BALANCE.stages.length}`;
-  monsterDiv.textContent = st.monster;
-  bossHpDiv.textContent = `보스 체력: ${st.bossHp}`;
-  bossHp = st.bossHp; bossAtk = st.bossAtk || 10;
-  yourAtkSpan.textContent = `공격력: ${yourAtk}`;
-  yourHpSpan.textContent = `체력: ${yourHp}`;
-  resultDiv.textContent = "";
-  infoMsg.textContent = `각 행마다 하나씩 옵션을 선택하세요!`;
-  fightBtn.classList.add("hide");
-  nextBtn.classList.add("hide");
-  restartBtn.classList.add("hide");
-  btnSections.innerHTML = "";
-  let selectedRows = 0;
-  st.rows.forEach((row, rowIdx) => {
-    let section = document.createElement('div');
-    section.className = 'btn-section';
-    section.innerHTML = `<div class="stage-label">옵션 선택 ${rowIdx + 1}</div>`;
-    let rowDiv = document.createElement('div');
-    rowDiv.className = 'btn-row';
-    let rowSelected = false;
-    row.forEach((btnOpt, colIdx) => {
-      let btn = document.createElement('button');
-      btn.className = 'up-btn';
-      btn.innerHTML = `<span class="odds">확률 ${btnOpt.prob}%</span><span class="opt-ch">${btnOpt.type === 'atk' ? '공격력' : '체력'} +${btnOpt.val}</span>`;
-      btn.onclick = () => {
-        if (rowSelected) return;
-        play('select');
-        rowSelected = true;
-        rowDiv.querySelectorAll('button').forEach(b => b.disabled = true);
-        let rand = Math.random() * 100;
-        if (rand < btnOpt.prob) {
-          btn.classList.add('win');
-          play('win');
-          if (btnOpt.type === 'atk') {
-            yourAtk += btnOpt.val;
-            yourAtkSpan.textContent = `공격력: ${yourAtk}`;
-          } else {
-            yourHp += btnOpt.val;
-            yourHpSpan.textContent = `체력: ${yourHp}`;
-          }
-          infoMsg.textContent = `성공! ${btnOpt.type === 'atk' ? "공격력" : "체력"} +${btnOpt.val}`;
-        } else {
-          btn.classList.add('lose');
-          play('lose');
-          infoMsg.textContent = `실패! 아무 효과 없음`;
+            ensureInitialMatch() {
+                const randomLane = Math.floor(Math.random() * 4);
+                const randomStack = Math.floor(Math.random() * 3);
+                const randomColor = this.colors[Math.floor(Math.random() * this.colors.length)];
+                const targetNumber = this.targetNumbers[Math.floor(Math.random() * this.targetNumbers.length)];
+                const stackNumber = this.stackNumbers[Math.floor(Math.random() * this.stackNumbers.length)];
+
+                this.targetLanes[randomLane][0] = {
+                    color: randomColor,
+                    number: targetNumber,
+                    id: Date.now()
+                };
+
+                this.stacks[randomStack][this.stacks[randomStack].length - 1] = {
+                    color: randomColor,
+                    number: Math.max(stackNumber, targetNumber),
+                    id: Date.now()
+                };
+                console.log('ensureInitialMatch: Ensured initial match', { lane: randomLane, stack: randomStack, color: randomColor });
+            }
+
+            startGame() {
+                this.gameRunning = true;
+                this.showMessage('게임 시작! 자동 탐지 중...', 'success');
+                this.updateDisplay();
+                this.startQueueScanLoop();
+                console.log('startGame: Game started', { gameRunning: this.gameRunning });
+            }
+
+            resetGame() {
+                console.log('resetGame: Resetting game');
+                this.stopQueueScanLoop();
+                this.attackQueue = [null, null, null, null];
+                this.stacks = [];
+                this.targetLanes = [[], [], [], []];
+                this.gameRunning = false;
+                this.initGame();
+                this.startGame();
+                console.log('resetGame: Game reset completed');
+            }
+
+            getAvailableQueueSlot() {
+                for (let i = 0; i < this.attackQueue.length; i++) {
+                    if (this.attackQueue[i] === null || this.attackQueue[i].number <= 0) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            selectBlock(stackIndex) {
+                console.log('selectBlock: Called with stackIndex', stackIndex, {
+                    gameRunning: this.gameRunning,
+                    queue: this.attackQueue.map(q => q ? `${q.color}:${q.number}` : 'empty'),
+                    stack: this.stacks[stackIndex]
+                });
+
+                if (!this.gameRunning) {
+                    this.showMessage('게임이 시작되지 않았습니다!', 'error');
+                    console.log('selectBlock: Game not running');
+                    return;
+                }
+
+                const availableSlot = this.getAvailableQueueSlot();
+                if (availableSlot === -1) {
+                    this.showMessage('대기열이 가득 찼습니다!', 'warning');
+                    console.log('selectBlock: Queue full');
+                    return;
+                }
+
+                const stack = this.stacks[stackIndex];
+                if (!stack || stack.length === 0) {
+                    this.showMessage('스택이 비어 있습니다!', 'error');
+                    console.log('selectBlock: Stack empty');
+                    return;
+                }
+
+                const topBlock = stack[stack.length - 1];
+                const queueBlock = { 
+                    ...topBlock, 
+                    stackIndex, 
+                    id: Date.now() + Math.random(), 
+                    isFiring: false,
+                    queuePosition: availableSlot
+                };
+                
+                this.attackQueue[availableSlot] = queueBlock;
+                this.stacks[stackIndex].pop();
+
+                const newColor = this.colors[Math.floor(Math.random() * this.colors.length)];
+                const newNumber = this.stackNumbers[Math.floor(Math.random() * this.stackNumbers.length)];
+                this.stacks[stackIndex].unshift({ color: newColor, number: newNumber, id: Date.now() + Math.random() });
+
+                if (this.stacks[stackIndex].length > 5) this.stacks[stackIndex].shift();
+
+                this.showMessage(`블록(${topBlock.color}, ${topBlock.number})이 대기열에 추가되었습니다.`, 'success');
+                console.log(`selectBlock: Added block (${topBlock.color}, ${topBlock.number}) to queue slot ${availableSlot}`, this.attackQueue);
+
+                requestAnimationFrame(() => {
+                    this.updateStacksAndQueue();
+                    if (this.autoMode) this.scanAndFireOnce();
+                });
+            }
+
+            startQueueScanLoop() {
+                if (this._queueScanTimer) {
+                    clearInterval(this._queueScanTimer);
+                    this._queueScanTimer = null;
+                    console.log('startQueueScanLoop: Cleared existing timer');
+                }
+                this._queueScanTimer = setInterval(() => {
+                    if (!this.gameRunning || !this.autoMode) return;
+                    this.scanAndFireOnce();
+                }, 150);
+                console.log('startQueueScanLoop: Started queue scan loop');
+            }
+
+            stopQueueScanLoop() {
+                if (this._queueScanTimer) {
+                    clearInterval(this._queueScanTimer);
+                    this._queueScanTimer = null;
+                    console.log('stopQueueScanLoop: Stopped queue scan loop');
+                }
+            }
+
+            toggleAutoMode() {
+                this.autoMode = !this.autoMode;
+                this.showMessage(`자동 탐지: ${this.autoMode ? 'On' : 'Off'}`, '');
+                if (this.autoMode) this.startQueueScanLoop();
+                else this.stopQueueScanLoop();
+                console.log('toggleAutoMode: Auto mode set to', this.autoMode);
+            }
+
+            scanAndFireOnce() {
+                if (!this.gameRunning) return;
+
+                for (let qIndex = 0; qIndex < this.attackQueue.length; qIndex++) {
+                    const q = this.attackQueue[qIndex];
+                    if (!q || q.isFiring) continue;
+
+                    let foundLane = -1;
+                    for (let laneIndex = 0; laneIndex < this.targetLanes.length; laneIndex++) {
+                        const lane = this.targetLanes[laneIndex];
+                        if (lane.length > 0 && lane[0].color === q.color) {
+                            foundLane = laneIndex;
+                            break;
+                        }
+                    }
+
+                    if (foundLane !== -1) {
+                        this.attackQueue[qIndex].isFiring = true;
+                        this.fireFromQueueIndex(qIndex, foundLane);
+                    }
+                }
+
+                this.checkQueueStuck();
+            }
+
+            fireFromQueueIndex(queueIndex, laneIndex) {
+                if (!this.attackQueue[queueIndex]) return;
+
+                const queued = this.attackQueue[queueIndex];
+                const lane = this.targetLanes[laneIndex];
+
+                if (!lane || lane.length === 0) {
+                    this.attackQueue[queueIndex].isFiring = false;
+                    return;
+                }
+
+                const target = lane[0];
+                if (!target) {
+                    this.attackQueue[queueIndex].isFiring = false;
+                    return;
+                }
+
+                const shotsTotal = queued.number;
+                const shotsToApply = Math.min(shotsTotal, target.number);
+                const shotInterval = 1000 / 15;
+                let shotsFired = 0;
+                const initialTargetId = target.id;
+                let lastShotTime = performance.now();
+
+                const fireLoop = (now) => {
+                    if (!this.gameRunning) {
+                        if (this.attackQueue[queueIndex]) {
+                            this.attackQueue[queueIndex].isFiring = false;
+                        }
+                        return;
+                    }
+
+                    const currentBottom = this.targetLanes[laneIndex] && this.targetLanes[laneIndex][0];
+                    if (!currentBottom || currentBottom.id !== initialTargetId) {
+                        if (this.attackQueue[queueIndex]) {
+                            this.attackQueue[queueIndex].isFiring = false;
+                        }
+                        requestAnimationFrame(() => this.updateTargetLanesAndQueue());
+                        return;
+                    }
+
+                    if (now - lastShotTime >= shotInterval) {
+                        console.log(`fireFromQueueIndex: Shot fired from queue ${queueIndex} to lane ${laneIndex}, shotsFired: ${shotsFired + 1}`);
+                        this.createSingleParticle(queueIndex, laneIndex, queued.color);
+
+                        currentBottom.number -= 1;
+                        queued.number -= 1;
+                        shotsFired++;
+                        lastShotTime = now;
+
+                        if (currentBottom.number <= 0) {
+                            this.targetLanes[laneIndex].shift();
+                            const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                            const number = this.targetNumbers[Math.floor(Math.random() * this.targetNumbers.length)];
+                            this.targetLanes[laneIndex].push({ color, number, id: Date.now() + Math.random() });
+                        }
+
+                        requestAnimationFrame(() => this.updateTargetLanesAndQueue());
+                    }
+
+                    if (shotsFired < shotsToApply && queued.number > 0) {
+                        requestAnimationFrame(fireLoop);
+                    } else {
+                        this.score += shotsFired;
+                        this.matchCountSinceColorIncrease += 1;
+
+                        if (queued.number > 0) {
+                            this.attackQueue[queueIndex].isFiring = false;
+                            this.showMessage(`잔여값 ${queued.number}으로 대기열에 남음`, 'warning');
+                        } else {
+                            this.attackQueue[queueIndex] = null;
+                        }
+
+                        this.checkIncreaseColorByProgress();
+                        this.checkLevelComplete();
+                        requestAnimationFrame(() => {
+                            this.updateTargetLanesAndQueue();
+                            this.showDamageText(laneIndex, shotsFired);
+                            this.showMessage(`매칭 성공! +${shotsFired}점`, 'success');
+                        });
+                    }
+                };
+
+                requestAnimationFrame(fireLoop);
+            }
+
+            createSingleParticle(queueIndex, laneIndex, color) {
+                console.log(`createSingleParticle: Creating particle from queue ${queueIndex} to lane ${laneIndex}, color: ${color}`);
+                const queueArea = document.getElementById('queueArea');
+                const targetLanes = document.getElementById('targetLanes');
+
+                const slotEl = queueArea.children[queueIndex];
+                if (!slotEl) return;
+
+                const slotRect = slotEl.getBoundingClientRect();
+                const startX = slotRect.left + slotRect.width / 2;
+                const startY = slotRect.top + slotRect.height / 2;
+
+                const laneEl = targetLanes.children[laneIndex];
+                if (!laneEl) return;
+
+                const bottomBlock = laneEl.children[0];
+                if (!bottomBlock) return;
+
+                const targetRect = bottomBlock.getBoundingClientRect();
+                const targetX = targetRect.left + targetRect.width / 2;
+                const targetY = targetRect.top + targetRect.height / 2;
+
+                const p = document.createElement('div');
+                p.className = 'shooting-particle';
+
+                const cssColor = window.getComputedStyle(document.querySelector('.' + color))?.backgroundColor || color;
+                p.style.background = cssColor;
+                p.style.left = startX + 'px';
+                p.style.top = startY + 'px';
+                p.style.opacity = '1';
+
+                document.body.appendChild(p);
+
+                const duration = 200;
+                const start = performance.now();
+
+                function easeOutQuad(t) {
+                    return t * (2 - t);
+                }
+
+                function frame(now) {
+                    const t = Math.min(1, (now - start) / duration);
+                    const eased = easeOutQuad(t);
+
+                    const curX = startX + (targetX - startX) * eased + (Math.random() - 0.5) * 8;
+                    const curY = startY + (targetY - startY) * eased + (Math.random() - 0.5) * 8;
+
+                    p.style.left = curX + 'px';
+                    p.style.top = curY + 'px';
+                    p.style.opacity = String(1 - eased);
+
+                    const scale = 1 - 0.35 * eased;
+                    p.style.transform = `translate(-50%,-50%) scale(${scale})`;
+
+                    if (t < 1) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        if (p.parentNode) p.parentNode.removeChild(p);
+                    }
+                }
+
+                requestAnimationFrame(frame);
+            }
+
+            showDamageText(laneIndex, damage) {
+                const targetLanesEl = document.getElementById('targetLanes');
+                const laneEl = targetLanesEl.children[laneIndex];
+                if (!laneEl) return;
+
+                const rect = laneEl.getBoundingClientRect();
+                const tx = rect.left + rect.width / 2;
+                const ty = rect.top + rect.height / 2;
+
+                const d = document.createElement('div');
+                d.className = 'damage-text';
+                d.textContent = `-${damage}`;
+                d.style.left = tx + 'px';
+                d.style.top = ty + 'px';
+
+                document.body.appendChild(d);
+
+                setTimeout(() => {
+                    if (d.parentNode) d.parentNode.removeChild(d);
+                }, 900);
+            }
+
+            checkQueueStuck() {
+                const availableSlots = this.getAvailableQueueSlot();
+                if (availableSlots !== -1) return;
+
+                const activeBlocks = this.attackQueue.filter(q => q !== null && q.number > 0);
+                for (let q of activeBlocks) {
+                    for (let lane of this.targetLanes) {
+                        if (lane.length > 0 && lane[0].color === q.color) return;
+                    }
+                }
+
+                this.gameRunning = false;
+                this.stopQueueScanLoop();
+                this.showGameOverModal(`대기열이 가득 차고 더 이상 공격할 수 없습니다. 획득 점수: ${this.score}`);
+            }
+
+            checkIncreaseColorByProgress() {
+                const threshold = 4;
+                if (this.matchCountSinceColorIncrease >= threshold) {
+                    this.matchCountSinceColorIncrease = 0;
+                    if (this.colorCount < this.fullColorPool.length) {
+                        this.colorCount++;
+                        this.colors = this.fullColorPool.slice(0, this.colorCount);
+                        this.showMessage(`난이도 상승 — 색상 수 ${this.colorCount}개`, 'warning');
+                        document.getElementById('colorCount').textContent = this.colorCount;
+                    }
+                }
+            }
+
+            checkLevelComplete() {
+                const newLevel = Math.floor(this.score / 500) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.showMessage(`레벨업! 레벨 ${this.level}`, 'success');
+                }
+            }
+
+            showGameOverModal(message) {
+                const root = document.getElementById('modalRoot');
+                root.innerHTML = '';
+
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop';
+
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `<h2>게임 오버</h2><p>${message}</p>`;
+
+                const actions = document.createElement('div');
+                actions.className = 'modal-actions';
+
+                const retry = document.createElement('button');
+                retry.className = 'btn';
+                retry.textContent = '다시 플레이';
+                retry.onclick = () => {
+                    root.innerHTML = '';
+                    this.resetGame();
+                };
+
+                const close = document.createElement('button');
+                close.className = 'btn';
+                close.textContent = '나가기';
+                close.onclick = () => {
+                    root.innerHTML = '';
+                    this.showMessage('게임을 중단했습니다.');
+                };
+
+                actions.appendChild(retry);
+                actions.appendChild(close);
+                modal.appendChild(actions);
+                backdrop.appendChild(modal);
+                root.appendChild(backdrop);
+            }
+
+            updateDisplay() {
+                console.log('updateDisplay: Updating full UI', { startTime: performance.now() });
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('colorCount').textContent = this.colorCount;
+
+                this.updateTargetLanes();
+                this.updateStacksAndQueue();
+                console.log('updateDisplay: Full UI updated', { endTime: performance.now() });
+            }
+
+            updateTargetLanes() {
+                const targetContainer = document.getElementById('targetLanes');
+                targetContainer.innerHTML = '';
+                this.targetLanes.forEach((lane, laneIndex) => {
+                    const laneEl = document.createElement('div');
+                    laneEl.className = 'target-lane';
+
+                    lane.forEach((block, idx) => {
+                        const blockEl = document.createElement('div');
+                        blockEl.className = `target-block ${block.color}`;
+
+                        if (idx === 0) {
+                            blockEl.classList.add('attackable');
+                            blockEl.innerHTML = `<div class="block-number">${block.number}</div><div class="block-label">ATTACK</div>`;
+                        } else {
+                            blockEl.innerHTML = `<div class="block-number">${block.number}</div><div class="block-label">TARGET</div>`;
+                        }
+
+                        laneEl.appendChild(blockEl);
+                    });
+
+                    targetContainer.appendChild(laneEl);
+                });
+            }
+
+            updateStacksAndQueue() {
+                const stacksContainer = document.getElementById('stacksContainer');
+                stacksContainer.innerHTML = '';
+                this.stacks.forEach((stack, stackIndex) => {
+                    const stackEl = document.createElement('div');
+                    stackEl.className = 'stack';
+
+                    stack.forEach((block, blockIndex) => {
+                        const blockEl = document.createElement('div');
+                        blockEl.className = `stack-block ${block.color}`;
+                        blockEl.innerHTML = `<div class="block-number">${block.number}</div><div class="block-label">${blockIndex === stack.length - 1 ? 'TOP' : 'WAIT'}</div>`;
+
+                        blockEl.onclick = null;
+                        blockEl.removeEventListener('click', this.handleBlockClick);
+
+                        // 수정된 부분: 블록을 클릭할 때마다 실시간으로 대기열 상태를 확인
+                        if (blockIndex === stack.length - 1 && this.gameRunning) {
+                            blockEl.classList.add('top-block');
+                            blockEl.addEventListener('click', () => {
+                                // 클릭 시점에 실시간으로 대기열 상태를 확인
+                                const currentAvailableSlot = this.getAvailableQueueSlot();
+                                if (currentAvailableSlot !== -1) {
+                                    this.handleBlockClick(stackIndex);
+                                } else {
+                                    this.showMessage('대기열이 가득 찼습니다!', 'warning');
+                                }
+                            });
+                        } else {
+                            blockEl.style.cursor = 'not-allowed';
+                        }
+
+                        stackEl.appendChild(blockEl);
+                    });
+
+                    stacksContainer.appendChild(stackEl);
+                });
+
+                const queueArea = document.getElementById('queueArea');
+                for (let i = 0; i < 4; i++) {
+                    const slot = queueArea.children[i];
+                    slot.innerHTML = '';
+                    slot.className = 'queue-slot';
+
+                    if (this.attackQueue[i]) {
+                        const block = this.attackQueue[i];
+                        slot.className = `queue-block ${block.color} ${!block.isFiring ? 'added' : ''}`;
+                        slot.innerHTML = `<div class="block-number">${block.number}</div><div class="block-label">${block.isFiring ? 'FIRING' : 'QUEUE'}</div>`;
+                    } else {
+                        slot.innerHTML = 'Empty';
+                    }
+                }
+            }
+
+            updateTargetLanesAndQueue() {
+                console.log('updateTargetLanesAndQueue: Updating partial UI', { startTime: performance.now() });
+                this.updateTargetLanes();
+                this.updateQueue();
+                console.log('updateTargetLanesAndQueue: Partial UI updated', { endTime: performance.now() });
+            }
+
+            updateQueue() {
+                const queueArea = document.getElementById('queueArea');
+                for (let i = 0; i < 4; i++) {
+                    const slot = queueArea.children[i];
+                    slot.innerHTML = '';
+                    slot.className = 'queue-slot';
+
+                    if (this.attackQueue[i]) {
+                        const block = this.attackQueue[i];
+                        slot.className = `queue-block ${block.color} ${!block.isFiring ? 'added' : ''}`;
+                        slot.innerHTML = `<div class="block-number">${block.number}</div><div class="block-label">${block.isFiring ? 'FIRING' : 'QUEUE'}</div>`;
+                    } else {
+                        slot.innerHTML = 'Empty';
+                    }
+                }
+            }
+
+            handleBlockClick(stackIndex) {
+                console.log('handleBlockClick: Stack', stackIndex, 'clicked at', new Date().toISOString());
+                this.selectBlock(stackIndex);
+            }
+
+            showMessage(text, type = '') {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = text;
+                messageEl.className = `message ${type}`;
+
+                setTimeout(() => {
+                    if (messageEl) {
+                        messageEl.textContent = '';
+                        messageEl.className = 'message';
+                    }
+                }, 2200);
+            }
         }
-        selectedRows++;
-        if (selectedRows === st.rows.length) {
-          Array.from(btnSections.querySelectorAll('button')).forEach(b => b.disabled = true);
-          fightBtn.classList.remove("hide");
-          infoMsg.textContent = `모든 선택 완료! 도전 버튼으로 보스와 싸우세요!`;
+
+        let game;
+
+        function startIntroGame() {
+            console.log('startIntroGame: Starting game');
+            document.getElementById('intro').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+
+            if (!game) {
+                game = new ColorShooterGame();
+                game.initGame();
+            }
+            game.startGame();
         }
-      };
-      rowDiv.appendChild(btn);
-    });
-    section.appendChild(rowDiv);
-    btnSections.appendChild(section);
-  });
-}
 
-fightBtn.onclick = () => {
-  play('fight');
-  battleModal.style.display = "flex";
-  battleMonster.textContent = BALANCE.stages[nowStage].monster;
-  battleYou.textContent = `내 체력: ${yourHp}`;
-  battleBoss.textContent = `보스 체력: ${bossHp}`;
-  battleHP.style.width = "100%";
-  battleBossHP.style.width = "100%";
-  battleLog.innerHTML = "<b>전투 시작!</b>";
-  battleClose.classList.add("hide");
-
-  let playerHP = yourHp, bossCurrentHP = bossHp;
-  let maxTurns = 10, turn = 0;
-
-  function battleRound() {
-    if (turn >= maxTurns || playerHP <= 0 || bossCurrentHP <= 0) {
-      setTimeout(() => {
-        if (bossCurrentHP <= 0) {
-          battleLog.innerHTML += "<br><span class='battle-dmg'>보스를 처치했습니다!</span>";
-          play('victory');
-          endBattle(true);
-        } else if (playerHP <= 0) {
-          battleLog.innerHTML += "<br><span class='battle-dmg'>패배! 체력이 모두 소진되었습니다.</span>";
-          play('defeat');
-          endBattle(false);
-        } else {
-          battleLog.innerHTML += "<br><span style='color:#e6c222;'>무승부! (턴수 초과)</span>";
-          play('lose');
-          endBattle(false);
+        function resetGame() {
+            console.log('resetGame: Triggered');
+            if (game) game.resetGame();
         }
-      }, 1000);
-      return;
-    }
-    turn++;
-    // 플레이어 공격
-    let playerDmg = Math.max(5, Math.floor(yourAtk * (0.6 + Math.random() * 0.5)));
-    bossCurrentHP = Math.max(0, bossCurrentHP - playerDmg);
-    battleBossHP.style.width = (bossCurrentHP / bossHp * 100).toFixed(1) + "%";
-    battleBoss.textContent = `보스 체력: ${bossCurrentHP}`;
-    battlePlayer.classList.add("attack-move");
-    battleMonster.classList.add("shake");
-    play('attack');
-    animateFloatDamage(battleMonster, playerDmg, false);
-    setTimeout(() => {
-      battlePlayer.classList.remove("attack-move");
-      battleMonster.classList.remove("shake");
-    }, 400);
-    battleLog.innerHTML += `<br><span class="battle-hit">턴${turn}: 내가 공격! 데미지 <b>${playerDmg}</b></span>`;
-    // 보스 반격
-    setTimeout(() => {
-      if (bossCurrentHP === 0) return battleRound();
-      let bossDmg = Math.max(6, Math.floor(bossAtk * (0.65 + Math.random() * 0.5)));
-      playerHP = Math.max(0, playerHP - bossDmg);
-      battleHP.style.width = (playerHP / yourHp * 100).toFixed(1) + "%";
-      battleYou.textContent = `내 체력: ${playerHP}`;
-      battleMonster.classList.add("attack-move");
-      battlePlayer.classList.add("shake");
-      play('attack');
-      animateFloatDamage(battlePlayer, bossDmg, true);
-      setTimeout(() => {
-        battleMonster.classList.remove("attack-move");
-        battlePlayer.classList.remove("shake");
-      }, 400);
-      battleLog.innerHTML += `<br><span class="battle-dmg">보스 반격! 데미지 <b>${bossDmg}</b></span>`;
-      setTimeout(battleRound, 1200);
-    }, 1000);
-  }
-  setTimeout(battleRound, 100);
-}
 
-function animateFloatDamage(parentElem, dmg, isHeal) {
-  const fx = document.createElement("span");
-  fx.textContent = (isHeal ? "-" : "-") + dmg;
-  fx.className = "float-effect " + (isHeal ? "float-attack" : "float-attack");
-  fx.style.left = isHeal ? "75%" : "25%"; // Position damage near respective character
-  parentElem.parentNode.appendChild(fx);
-  setTimeout(() => fx.remove(), 1000);
-}
-
-function endBattle(win) {
-  battleClose.classList.remove("hide");
-  resultDiv.textContent = win ? "승리! 다음 스테이지로 이동합니다." : "패배! 체력을 회복하거나 다시 도전하세요.";
-  fightBtn.classList.add("hide");
-  nextBtn.classList.toggle("hide", !win || nowStage === BALANCE.stages.length - 1);
-  restartBtn.classList.toggle("hide", (win && nowStage === BALANCE.stages.length - 1) || !win);
-  infoMsg.textContent = win ? "축하합니다! 다음 스테이지 도전!" : "체력을 회복하거나 다시 도전하세요!";
-  battleLog.scrollTop = battleLog.scrollHeight;
-}
-
-battleClose.onclick = () => {
-  battleModal.style.display = "none";
-};
-
-nextBtn.onclick = () => {
-  nowStage++;
-  loadStage();
-  nextBtn.classList.add("hide");
-  fightBtn.classList.add("hide");
-  restartBtn.classList.add("hide");
-  resultDiv.textContent = "";
-  infoMsg.textContent = `새로운 스테이지에 도전하세요!`;
-};
-
-restartBtn.onclick = startGame;
-
-window.onload = startGame;
-</script>
+        window.onload = function() {
+            console.log('window.onload: Page loaded');
+        };
+    </script>
 </body>
 </html>
