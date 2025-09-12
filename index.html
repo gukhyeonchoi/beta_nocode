@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <title>컬러 슈터 - 모바일 스테이지 버전</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=yes" />
+    <title>컬러 슈터 - 스테이지 버전</title>
     <style>
         body {
             margin: 0;
@@ -14,7 +14,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            touch-action: auto;
+            justify-content: center;
+            touch-action: manipulation;
             -webkit-user-select: none;
             user-select: none;
             overflow: hidden;
@@ -24,56 +25,128 @@
 
         #intro {
             background: rgba(255,255,255,0.95);
-            border-radius: 1.5vmin;
-            padding: 2vmin;
-            box-shadow: 0 0.8vmin 2vmin rgba(0,0,0,0.25);
-            max-width: 90vmin;
+            border-radius: 2vmin;
+            padding: 3vmin;
+            box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.2);
+            max-width: 90vw;
             text-align: center;
-            margin-top: 3vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2vmin;
+        }
+
+        #intro h1 {
+            margin: 0;
+            font-size: 4vmin;
+            color: #333;
+        }
+
+        #intro p {
+            margin: 0;
+            font-size: 2.4vmin;
+            color: #495057;
         }
 
         .intro-btn {
             background: #007bff;
             color: #fff;
             border: none;
-            padding: 1.5vmin 3vmin;
-            border-radius: 0.8vmin;
+            padding: 2vmin 4vmin;
+            border-radius: 1vmin;
             cursor: pointer;
-            font-size: 2vmin;
+            font-size: 2.6vmin;
             font-weight: bold;
-            transition: transform 0.2s ease;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            touch-action: manipulation;
         }
 
         .intro-btn:active {
             transform: scale(0.95);
+            filter: brightness(0.9);
         }
 
         .game-container {
             display: none;
             background: white;
-            border-radius: 1.5vmin;
-            padding: 1.5vmin;
-            box-shadow: 0 0.8vmin 2vmin rgba(0,0,0,0.3);
-            max-width: 90vmin;
-            width: 100%;
-            max-height: 98vh;
-            overflow-y: auto;
+            border-radius: 2vmin;
+            padding: 2vmin;
+            box-shadow: 0 1vmin 2.5vmin rgba(0,0,0,0.3);
+            width: 100vw;
+            max-width: 95vw;
+            height: 100vh;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             box-sizing: border-box;
+            touch-action: manipulation;
         }
 
         .score-board {
             text-align: center;
-            margin-bottom: 1.5vmin;
-            font-size: 2vmin;
+            margin-bottom: 1vmin;
+            font-size: 2.4vmin;
             font-weight: bold;
             color: #333;
         }
 
+        .stage-progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.7vmin;
+            margin-bottom: 1.5vmin;
+            font-size: 1.4vmin;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 0.5vmin 0;
+        }
+
+        .stage-indicator {
+            width: 2.2vmin;
+            height: 2.2vmin;
+            border-radius: 50%;
+            border: 0.2vmin solid #6c757d;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4vmin;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+        }
+
+        .stage-indicator.cleared {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+        .stage-indicator.current {
+            background: #007bff;
+            border-color: #007bff;
+            color: #fff;
+        }
+
+        .stage-indicator:not(:last-child)::after {
+            content: '-';
+            position: absolute;
+            right: -1vmin;
+            color: #dee2e6;
+            font-size: 1.4vmin;
+        }
+
         .game-area {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 1.5vmin;
-            max-height: 85vh;
+            overflow: hidden;
         }
 
         .target-area {
@@ -81,7 +154,7 @@
             border: 0.3vmin solid #dee2e6;
             border-radius: 1vmin;
             padding: 1.5vmin;
-            height: 24vmin;
+            height: 22vmin;
             position: relative;
             overflow: hidden;
         }
@@ -91,16 +164,16 @@
             font-weight: bold;
             margin-bottom: 1vmin;
             color: #495057;
-            font-size: 2vmin;
+            font-size: 2.4vmin;
         }
 
         .target-lanes {
             display: flex;
-            gap: 0.5vmin;
+            gap: 0.6vmin;
             justify-content: center;
             align-items: flex-end;
             height: calc(100% - 2.8vmin);
-            max-height: 21.2vmin;
+            max-height: 22vmin;
             overflow: hidden;
             position: relative;
         }
@@ -118,19 +191,19 @@
         }
 
         .target-lane {
-            width: 5.2vmin;
+            width: 5.5vmin;
             display: flex;
             flex-direction: column-reverse;
-            gap: 0.5vmin;
+            gap: 0.4vmin;
             height: 100%;
             align-items: center;
-            max-height: 21.2vmin;
+            max-height: 22vmin;
             overflow: visible;
         }
 
         .target-block {
-            width: 5.2vmin;
-            height: 5.2vmin;
+            width: 5.5vmin;
+            height: 5.5vmin;
             border-radius: 1vmin;
             border: 0.2vmin solid rgba(0,0,0,0.12);
             display: flex;
@@ -156,12 +229,12 @@
         }
 
         .block-number {
-            font-size: 1.8vmin;
+            font-size: 2vmin;
             line-height: 1;
         }
 
         .block-label {
-            font-size: 1.1vmin;
+            font-size: 1.2vmin;
             opacity: 0.85;
         }
 
@@ -174,28 +247,28 @@
             justify-content: center;
             gap: 1.5vmin;
             align-items: center;
-            height: 8.5vmin;
+            height: 7.5vmin;
             position: relative;
             z-index: 20;
         }
 
         .queue-slot {
-            width: 5.2vmin;
-            height: 5.2vmin;
+            width: 5.5vmin;
+            height: 5.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin dashed rgba(0,0,0,0.28);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5vmin;
+            font-size: 1.6vmin;
             color: #6c757d;
             position: relative;
             box-sizing: border-box;
         }
 
         .queue-block {
-            width: 5.2vmin;
-            height: 5.2vmin;
+            width: 5.5vmin;
+            height: 5.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(0,0,0,0.28);
             display: flex;
@@ -224,7 +297,7 @@
             border-radius: 1vmin;
             padding: 1.5vmin;
             color: white;
-            height: 24vmin;
+            height: 22vmin;
             overflow: hidden;
             position: relative;
         }
@@ -233,7 +306,7 @@
             text-align: center;
             font-weight: bold;
             margin-bottom: 1vmin;
-            font-size: 2vmin;
+            font-size: 2.4vmin;
         }
 
         .stacks-container {
@@ -242,7 +315,7 @@
             justify-content: center;
             align-items: flex-start;
             height: calc(100% - 2.8vmin);
-            max-height: 21.2vmin;
+            max-height: 22vmin;
             overflow: hidden;
             position: relative;
         }
@@ -262,19 +335,19 @@
         .stack {
             display: flex;
             flex-direction: column;
-            gap: 0.5vmin;
+            gap: 0.4vmin;
             align-items: center;
             height: 100%;
-            max-height: 21.2vmin;
+            max-height: 22vmin;
             overflow: visible;
         }
 
         .stack-block {
-            width: 5.2vmin;
-            height: 5.2vmin;
+            width: 5.5vmin;
+            height: 5.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(255,255,255,0.25);
-            transition: box-shadow 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+            transition: box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -286,17 +359,19 @@
             box-sizing: border-box;
             z-index: 10;
             flex-shrink: 0;
+            touch-action: manipulation;
         }
 
         .stack-block.top-block {
             border-color: #2ecc71;
-            box-shadow: 0 0 0.8vmin rgba(46, 204, 113, 0.5);
+            box-shadow: 0 0 1vmin rgba(46, 204, 113, 0.5);
             cursor: pointer;
-            touch-action: manipulation;
+            padding: 0.5vmin;
         }
 
         .stack-block.top-block:active {
             box-shadow: 0 0 1.2vmin rgba(46, 204, 113, 0.7);
+            transform: scale(0.95);
         }
 
         .stack-block:not(.top-block) {
@@ -324,10 +399,10 @@
             position: fixed;
             color: #ff4444;
             font-weight: bold;
-            font-size: 1.8vmin;
+            font-size: 2vmin;
             z-index: 2001;
             pointer-events: none;
-            animation: damageFloat 1s ease-out forwards;
+            animation: damageFloat 0.8s ease-out forwards;
         }
 
         @keyframes damageFloat {
@@ -337,18 +412,23 @@
 
         .game-controls {
             text-align: center;
-            margin-top: 1vmin;
+            padding: 1vmin 0;
+            background: white;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
         }
 
         .btn {
             color: white;
             border: none;
-            padding: 1.2vmin 2.5vmin;
-            border-radius: 0.8vmin;
+            padding: 1.8vmin 3.5vmin;
+            border-radius: 1vmin;
             cursor: pointer;
-            font-size: 2vmin;
+            font-size: 2.4vmin;
             margin: 0 1vmin;
-            transition: transform 0.2s ease, filter 0.2s ease;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            touch-action: manipulation;
         }
 
         .btn:active {
@@ -375,7 +455,7 @@
             text-align: center;
             margin-top: 1vmin;
             font-weight: bold;
-            font-size: 2vmin;
+            font-size: 2.4vmin;
             min-height: 3vmin;
         }
 
@@ -400,20 +480,20 @@
             background: white;
             padding: 2vmin;
             border-radius: 1vmin;
-            width: 80vmin;
-            max-width: 90vmin;
+            width: 80vw;
+            max-width: 90vw;
             text-align: center;
-            box-shadow: 0 0.8vmin 2vmin rgba(0,0,0,0.35);
+            box-shadow: 0 1vmin 2.5vmin rgba(0,0,0,0.35);
         }
 
         .modal h2 {
             margin: 0.5vmin 0 1vmin 0;
-            font-size: 2.5vmin;
+            font-size: 3vmin;
         }
 
         .modal p {
             margin: 0.8vmin 0 1.5vmin 0;
-            font-size: 2vmin;
+            font-size: 2.4vmin;
         }
 
         .modal .modal-actions {
@@ -422,30 +502,120 @@
             justify-content: center;
         }
 
-        @media (max-width: 400px) {
+        @media (max-width: 360px) {
+            #intro {
+                padding: 2.5vmin;
+            }
+            #intro h1 {
+                font-size: 4.2vmin;
+            }
+            #intro p {
+                font-size: 2.6vmin;
+            }
+            .intro-btn {
+                font-size: 2.8vmin;
+                padding: 2.2vmin 4.2vmin;
+            }
+            .game-container {
+                padding: 1.5vmin;
+            }
+            .stage-progress {
+                gap: 0.8vmin;
+                margin-bottom: 1vmin;
+            }
+            .stage-indicator {
+                width: 2.4vmin;
+                height: 2.4vmin;
+                font-size: 1.6vmin;
+            }
+            .stage-indicator:not(:last-child)::after {
+                right: -1.1vmin;
+                font-size: 1.6vmin;
+            }
             .target-lane {
-                width: 6.2vmin;
+                width: 6vmin;
             }
             .target-block {
-                width: 6.2vmin;
-                height: 6.2vmin;
+                width: 6vmin;
+                height: 6vmin;
                 border: 0.2vmin solid rgba(0,0,0,0.12);
             }
             .queue-slot, .queue-block {
-                width: 6.2vmin;
-                height: 6.2vmin;
+                width: 6vmin;
+                height: 6vmin;
                 border: 0.2vmin solid rgba(0,0,0,0.28);
             }
             .stack-block {
-                width: 6.2vmin;
-                height: 6.2vmin;
+                width: 6vmin;
+                height: 6vmin;
                 border: 0.2vmin solid rgba(255,255,255,0.25);
             }
             .block-number {
-                font-size: 2vmin;
+                font-size: 2.2vmin;
             }
             .block-label {
-                font-size: 1.2vmin;
+                font-size: 1.3vmin;
+            }
+            .target-title, .selection-title {
+                font-size: 2.6vmin;
+            }
+            .btn, .intro-btn {
+                font-size: 2.6vmin;
+                padding: 2vmin 4vmin;
+            }
+            .score-board {
+                font-size: 2.6vmin;
+            }
+            .message {
+                font-size: 2.6vmin;
+            }
+            .damage-text {
+                font-size: 2.2vmin;
+            }
+            .modal h2 {
+                font-size: 3.2vmin;
+            }
+            .modal p {
+                font-size: 2.6vmin;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .game-container {
+                max-height: 100vh;
+            }
+            .target-area, .selection-area {
+                height: 20vmin;
+            }
+            .queue-area {
+                height: 7vmin;
+            }
+            .target-lanes, .stacks-container {
+                max-height: 20vmin;
+            }
+            .target-lane, .stack {
+                max-height: 20vmin;
+            }
+            .target-block {
+                width: 5vmin;
+                height: 5vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.12);
+            }
+            .queue-slot, .queue-block {
+                width: 5vmin;
+                height: 5vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.28);
+            }
+            .stack-block {
+                width: 5vmin;
+                height: 5vmin;
+                border: 0.2vmin solid rgba(255,255,255,0.25);
+            }
+            .block-number {
+                font-size: 1.8vmin;
+            }
+            .block-label {
+                font-size: 1.1vmin;
             }
             .target-title, .selection-title {
                 font-size: 2.2vmin;
@@ -460,86 +630,53 @@
             .message {
                 font-size: 2.2vmin;
             }
-            .damage-text {
-                font-size: 2vmin;
-            }
             .modal h2 {
                 font-size: 2.8vmin;
             }
             .modal p {
                 font-size: 2.2vmin;
             }
+            .damage-text {
+                font-size: 1.8vmin;
+            }
+            .stage-progress {
+                gap: 0.6vmin;
+                margin-bottom: 1vmin;
+            }
+            .stage-indicator {
+                width: 2vmin;
+                height: 2vmin;
+                font-size: 1.4vmin;
+            }
+            .stage-indicator:not(:last-child)::after {
+                right: -0.9vmin;
+                font-size: 1.4vmin;
+            }
         }
 
-        @media (max-height: 600px) {
+        @media (orientation: landscape) and (max-height: 500px) {
             .game-container {
-                max-height: 95vh;
-            }
-            .game-area {
-                max-height: 80vh;
+                padding: 1vmin;
             }
             .target-area, .selection-area {
-                height: 22vmin;
+                height: 18vmin;
             }
             .queue-area {
-                height: 8.5vmin;
+                height: 6.5vmin;
             }
             .target-lanes, .stacks-container {
-                max-height: 19.2vmin;
+                max-height: 18vmin;
             }
             .target-lane, .stack {
-                max-height: 19.2vmin;
-            }
-            .target-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(0,0,0,0.12);
-            }
-            .queue-slot, .queue-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(0,0,0,0.28);
-            }
-            .stack-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(255,255,255,0.25);
-            }
-            .block-number {
-                font-size: 1.6vmin;
-            }
-            .block-label {
-                font-size: 1vmin;
-            }
-            .target-title, .selection-title {
-                font-size: 1.8vmin;
-            }
-            .btn, .intro-btn {
-                font-size: 1.8vmin;
-                padding: 1vmin 2vmin;
-            }
-            .score-board {
-                font-size: 1.8vmin;
-            }
-            .message {
-                font-size: 1.8vmin;
-            }
-            .modal h2 {
-                font-size: 2.3vmin;
-            }
-            .modal p {
-                font-size: 1.8vmin;
-            }
-            .damage-text {
-                font-size: 1.6vmin;
+                max-height: 18vmin;
             }
         }
     </style>
 </head>
 <body>
     <div id="intro">
-        <h1>컬러 슈터 - 스테이지 모바일</h1>
-        <p>색상 블록을 활용해 타겟을 모두 제거하세요! 스테이지를 클리어하며 도전!</p>
+        <h1>컬러 슈터</h1>
+        <p>색상 블록을 활용해 타겟을 모두 제거하세요!</p>
         <button class="intro-btn" onclick="startIntroGame()">게임 시작</button>
     </div>
 
@@ -549,6 +686,7 @@
             <span style="margin-left: 3vmin;">점수: <span id="score">0</span></span>
             <span style="margin-left: 3vmin;">색상: <span id="colorCount">3</span></span>
         </div>
+        <div class="stage-progress" id="stageProgress"></div>
 
         <div class="game-area">
             <div class="target-area">
@@ -579,17 +717,18 @@
                 this.fullColorPool = ['red', 'blue', 'green', 'yellow', 'purple'];
                 this.stage = 1;
                 this.score = 0;
+                this.clearedStages = new Set();
                 this.stageConfig = {
                     1: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
                     2: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
                     3: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45] },
                     4: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    5: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 5, numberRange: [15, 30, 45, 60] },
-                    6: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60] },
-                    7: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
-                    8: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75] },
-                    9: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75] },
-                    10: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 7, numberRange: [15, 30, 45, 60, 75, 90] }
+                    5: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
+                    6: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
+                    7: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60, 75] },
+                    8: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60, 75] },
+                    9: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
+                    10: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75, 90] }
                 };
                 this.colors = [];
                 this.targetNumbers = [];
@@ -600,6 +739,8 @@
                 this.gameRunning = false;
                 this._queueScanTimer = null;
                 this._pendingUpdate = false;
+                this._particleCount = 0;
+                this._maxParticles = 30;
                 this.handleBlockTouch = this.handleBlockTouch.bind(this);
             }
 
@@ -607,9 +748,12 @@
                 this.stopQueueScanLoop();
                 this.stage = 1;
                 this.score = 0;
+                this.clearedStages.clear();
                 this._pendingUpdate = false;
+                this._particleCount = 0;
                 this.initStage();
                 this.updateDisplay();
+                this.updateStageProgress();
             }
 
             initStage() {
@@ -622,6 +766,7 @@
                 this.attackQueue = Array(config.queueSlots).fill(null);
                 this.generateStageBlocks(config);
                 this.updateQueueUI();
+                this.updateStageProgress();
             }
 
             generateStageBlocks(config) {
@@ -660,8 +805,10 @@
 
             startGame() {
                 this.gameRunning = true;
+                this._particleCount = 0;
                 this.showMessage(`스테이지 ${this.stage} 시작!`, 'success');
                 this.updateDisplay();
+                this.updateStageProgress();
                 this.startQueueScanLoop();
             }
 
@@ -669,6 +816,7 @@
                 this.stopQueueScanLoop();
                 this.gameRunning = false;
                 this._pendingUpdate = false;
+                this._particleCount = 0;
                 this.initGame();
                 this.startGame();
             }
@@ -815,7 +963,10 @@
                     }
 
                     if (now - lastShotTime >= shotInterval) {
-                        this.createSingleParticle(queueIndex, laneIndex, queued.color);
+                        if (this._particleCount < this._maxParticles) {
+                            this.createSingleParticle(queueIndex, laneIndex, queued.color);
+                            this._particleCount++;
+                        }
                         currentBottom.number -= 1;
                         queued.number -= 1;
                         shotsFired++;
@@ -885,7 +1036,7 @@
 
                 document.body.appendChild(p);
 
-                const duration = 200;
+                const duration = 150;
                 const start = performance.now();
 
                 function easeOutQuad(t) {
@@ -907,10 +1058,11 @@
                         requestAnimationFrame(frame);
                     } else {
                         if (p.parentNode) p.parentNode.removeChild(p);
+                        this._particleCount = Math.max(0, this._particleCount - 1);
                     }
                 }
 
-                requestAnimationFrame(frame);
+                requestAnimationFrame(frame.bind(this));
             }
 
             showDamageText(laneIndex, damage) {
@@ -934,12 +1086,13 @@
 
                 setTimeout(() => {
                     if (d.parentNode) d.parentNode.removeChild(d);
-                }, 900);
+                }, 800);
             }
 
             checkStageClear() {
                 const allCleared = this.targetLanes.every(lane => lane.length === 0);
                 if (allCleared) {
+                    this.clearedStages.add(this.stage);
                     this.gameRunning = false;
                     this.stopQueueScanLoop();
                     if (this.stage < 10) {
@@ -953,6 +1106,7 @@
             advanceStage() {
                 this.stage++;
                 this.gameRunning = false;
+                this._particleCount = 0;
                 this.stopQueueScanLoop();
                 this.initStage();
                 this.startGame();
@@ -995,7 +1149,7 @@
 
                 const retry = document.createElement('button');
                 retry.className = 'btn btn-retry';
-                retry.textContent = '처음부터 플레이';
+                retry.textContent = '다시 플레이';
                 retry.onclick = () => {
                     root.innerHTML = '';
                     this.resetGame();
@@ -1009,8 +1163,8 @@
                     this.advanceStage();
                 };
 
-                actions.appendChild(retry); // 순서 변경: 다시 플레이 먼저
-                actions.appendChild(next); // 다음 스테이지 나중에
+                actions.appendChild(retry);
+                actions.appendChild(next);
                 modal.appendChild(actions);
                 backdrop.appendChild(modal);
                 root.appendChild(backdrop);
@@ -1040,7 +1194,7 @@
                 close.onclick = () => {
                     root.innerHTML = '';
                     document.getElementById('gameContainer').style.display = 'none';
-                    document.getElementById('intro').style.display = 'block';
+                    document.getElementById('intro').style.display = 'flex';
                 };
 
                 const retry = document.createElement('button');
@@ -1051,11 +1205,25 @@
                     this.resetGame();
                 };
 
-                actions.appendChild(close); // 순서 변경: 나가기 먼저
-                actions.appendChild(retry); // 다시 플레이 나중에
+                actions.appendChild(close);
+                actions.appendChild(retry);
                 modal.appendChild(actions);
                 backdrop.appendChild(modal);
                 root.appendChild(backdrop);
+            }
+
+            updateStageProgress() {
+                const stageProgress = document.getElementById('stageProgress');
+                stageProgress.innerHTML = '';
+                for (let i = 1; i <= 10; i++) {
+                    const indicator = document.createElement('div');
+                    indicator.className = `stage-indicator ${
+                        i === this.stage ? 'current' : this.clearedStages.has(i) ? 'cleared' : ''
+                    }`;
+                    indicator.dataset.stage = i;
+                    indicator.textContent = i;
+                    stageProgress.appendChild(indicator);
+                }
             }
 
             updateDisplay() {
@@ -1063,6 +1231,7 @@
                 document.getElementById('score').textContent = this.score;
                 document.getElementById('colorCount').textContent = this.stageConfig[this.stage].colors;
                 this.updateTargetLanes();
+                this.updateStageProgress();
                 this.scheduleUpdate();
             }
 
@@ -1132,7 +1301,7 @@
                             blockEl.addEventListener('pointerdown', (e) => {
                                 e.preventDefault();
                                 this.handleBlockTouch(stackIndex);
-                            }, { once: true });
+                            }, { passive: false, once: true });
                         } else {
                             blockEl.style.cursor = 'not-allowed';
                         }
@@ -1187,7 +1356,7 @@
 
         function startIntroGame() {
             document.getElementById('intro').style.display = 'none';
-            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('gameContainer').style.display = 'flex';
             if (!game) {
                 game = new ColorShooterGame();
                 game.initGame();
@@ -1200,6 +1369,8 @@
         }
 
         window.onload = function() {
+            document.getElementById('intro').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none';
             console.log('Game loaded');
         };
     </script>
