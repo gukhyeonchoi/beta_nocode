@@ -70,7 +70,7 @@
             display: none;
             background: white;
             border-radius: 2vmin;
-            padding: 2vmin;
+            padding: 1vmin; /* 수정: 패딩 감소 */
             box-shadow: 0 1vmin 2.5vmin rgba(0,0,0,0.3);
             width: 100vw;
             max-width: 95vw;
@@ -78,6 +78,8 @@
             max-height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: space-around; /* 수정: 요소들 중앙/균등 배치 */
+            align-items: center;
             overflow: hidden;
             box-sizing: border-box;
             touch-action: manipulation;
@@ -85,7 +87,7 @@
 
         .score-board {
             text-align: center;
-            margin-bottom: 1vmin;
+            margin-bottom: 0.5vmin; /* 수정: 마진 감소 */
             font-size: 2.4vmin;
             font-weight: bold;
             color: #333;
@@ -96,7 +98,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.7vmin;
-            margin-bottom: 1.5vmin;
+            margin-bottom: 0.5vmin; /* 수정: 마진 감소 */
             font-size: 1.4vmin;
             color: #333;
             position: sticky;
@@ -145,7 +147,10 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1.5vmin;
+            gap: 1vmin; /* 수정: 간격 감소 */
+            justify-content: center; /* 수정: 세로 중앙 정렬 */
+            align-items: center;
+            width: 100%;
             overflow: hidden;
         }
 
@@ -153,8 +158,9 @@
             background: #f8f9fa;
             border: 0.3vmin solid #dee2e6;
             border-radius: 1vmin;
-            padding: 1.5vmin;
-            height: 22vmin;
+            padding: 1vmin; /* 수정: 패딩 감소 */
+            height: 25vh; /* 수정: vmin → vh로 동적 조정 */
+            width: 100%;
             position: relative;
             overflow: hidden;
         }
@@ -162,7 +168,7 @@
         .target-title {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 1vmin;
+            margin-bottom: 0.5vmin; /* 수정: 마진 감소 */
             color: #495057;
             font-size: 2.4vmin;
         }
@@ -173,7 +179,7 @@
             justify-content: center;
             align-items: flex-end;
             height: calc(100% - 2.8vmin);
-            max-height: 22vmin;
+            max-height: 25vh; /* 수정: 높이 조정 */
             overflow: hidden;
             position: relative;
         }
@@ -191,19 +197,19 @@
         }
 
         .target-lane {
-            width: 5.5vmin;
+            width: 6.5vmin;
             display: flex;
             flex-direction: column-reverse;
             gap: 0.4vmin;
             height: 100%;
             align-items: center;
-            max-height: 22vmin;
+            max-height: 25vh; /* 수정: 높이 조정 */
             overflow: visible;
         }
 
         .target-block {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 6.5vmin;
+            height: 6.5vmin;
             border-radius: 1vmin;
             border: 0.2vmin solid rgba(0,0,0,0.12);
             display: flex;
@@ -229,12 +235,12 @@
         }
 
         .block-number {
-            font-size: 2vmin;
+            font-size: 2.4vmin;
             line-height: 1;
         }
 
         .block-label {
-            font-size: 1.2vmin;
+            font-size: 1.4vmin;
             opacity: 0.85;
         }
 
@@ -245,30 +251,31 @@
             padding: 1vmin;
             display: flex;
             justify-content: center;
-            gap: 1.5vmin;
+            gap: 1vmin; /* 수정: 간격 감소 */
             align-items: center;
-            height: 7.5vmin;
+            height: 10vh; /* 수정: vmin → vh로 조정 */
+            width: 100%;
             position: relative;
             z-index: 20;
         }
 
         .queue-slot {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 6.5vmin;
+            height: 6.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin dashed rgba(0,0,0,0.28);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6vmin;
+            font-size: 1.8vmin;
             color: #6c757d;
             position: relative;
             box-sizing: border-box;
         }
 
         .queue-block {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 6.5vmin;
+            height: 6.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(0,0,0,0.28);
             display: flex;
@@ -295,9 +302,10 @@
         .selection-area {
             background: #343a40;
             border-radius: 1vmin;
-            padding: 1.5vmin;
+            padding: 1vmin; /* 수정: 패딩 감소 */
             color: white;
-            height: 22vmin;
+            height: 25vh; /* 수정: vmin → vh로 조정 */
+            width: 100%;
             overflow: hidden;
             position: relative;
         }
@@ -305,17 +313,17 @@
         .selection-title {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 1vmin;
+            margin-bottom: 0.5vmin; /* 수정: 마진 감소 */
             font-size: 2.4vmin;
         }
 
         .stacks-container {
             display: flex;
-            gap: 1.5vmin;
+            gap: 1vmin; /* 수정: 간격 감소 */
             justify-content: center;
             align-items: flex-start;
             height: calc(100% - 2.8vmin);
-            max-height: 22vmin;
+            max-height: 25vh; /* 수정: 높이 조정 */
             overflow: hidden;
             position: relative;
         }
@@ -338,13 +346,13 @@
             gap: 0.4vmin;
             align-items: center;
             height: 100%;
-            max-height: 22vmin;
+            max-height: 25vh; /* 수정: 높이 조정 */
             overflow: visible;
         }
 
         .stack-block {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 6.5vmin;
+            height: 6.5vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(255,255,255,0.25);
             transition: box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
@@ -379,31 +387,21 @@
             cursor: not-allowed;
         }
 
-.red {
-    background: url('assets/red.png') no-repeat center center / contain;
-}
-.blue {
-    background: url('assets/blue.png') no-repeat center center / contain;
-}
-.green {
-    background: url('assets/green.png') no-repeat center center / contain;
-}
-.yellow {
-    background: url('assets/yellow.png') no-repeat center center / contain;
-}
-.purple {
-    background: url('assets/purple.png') no-repeat center center / contain;
-}
-
+        .red { background: #e74c3c; }
+        .blue { background: #3498db; }
+        .green { background: #2ecc71; }
+        .yellow { background: #f1c40f; color: #333; }
+        .purple { background: #9b59b6; }
 
         .shooting-particle {
             position: fixed;
-            width: 0.8vmin;
-            height: 0.8vmin;
+            width: 1.4vmin;
+            height: 1.4vmin;
             border-radius: 50%;
             z-index: 2000;
             pointer-events: none;
             transform: translate(-50%, -50%);
+            box-shadow: 0 0 0.5vmin rgba(0,0,0,0.2);
         }
 
         .damage-text {
@@ -423,11 +421,12 @@
 
         .game-controls {
             text-align: center;
-            padding: 1vmin 0;
+            padding: 0.5vmin; /* 수정: 패딩 감소 */
             background: white;
             position: sticky;
             bottom: 0;
             z-index: 100;
+            width: 100%;
         }
 
         .btn {
@@ -464,10 +463,11 @@
 
         .message {
             text-align: center;
-            margin-top: 1vmin;
+            margin-top: 0.5vmin; /* 수정: 마진 감소 */
             font-weight: bold;
             font-size: 2.4vmin;
             min-height: 3vmin;
+            width: 100%;
         }
 
         .success { color: #28a745; }
@@ -528,11 +528,15 @@
                 padding: 2.2vmin 4.2vmin;
             }
             .game-container {
-                padding: 1.5vmin;
+                padding: 0.5vmin; /* 수정: 패딩 더 감소 */
+                justify-content: space-evenly; /* 수정: 모바일에서 균등 배치 */
+            }
+            .game-area {
+                gap: 0.5vmin; /* 수정: 간격 더 감소 */
             }
             .stage-progress {
                 gap: 0.8vmin;
-                margin-bottom: 1vmin;
+                margin-bottom: 0.3vmin; /* 수정: 마진 감소 */
             }
             .stage-indicator {
                 width: 2.4vmin;
@@ -543,8 +547,114 @@
                 right: -1.1vmin;
                 font-size: 1.6vmin;
             }
+            .target-area {
+                height: 30vh; /* 수정: 더 큰 높이 */
+                padding: 0.5vmin;
+            }
+            .target-lanes {
+                max-height: 30vh;
+            }
             .target-lane {
-                width: 6vmin;
+                width: 7vmin;
+                max-height: 30vh;
+            }
+            .target-block {
+                width: 7vmin;
+                height: 7vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.12);
+            }
+            .queue-area {
+                height: 12vh; /* 수정: 더 큰 높이 */
+                padding: 0.5vmin;
+                gap: 0.5vmin;
+            }
+            .queue-slot, .queue-block {
+                width: 7vmin;
+                height: 7vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.28);
+            }
+            .selection-area {
+                height: 30vh; /* 수정: 더 큰 높이 */
+                padding: 0.5vmin;
+            }
+            .stacks-container {
+                max-height: 30vh;
+                gap: 0.5vmin;
+            }
+            .stack {
+                max-height: 30vh;
+            }
+            .stack-block {
+                width: 7vmin;
+                height: 7vmin;
+                border: 0.2vmin solid rgba(255,255,255,0.25);
+            }
+            .block-number {
+                font-size: 2.6vmin;
+            }
+            .block-label {
+                font-size: 1.5vmin;
+            }
+            .target-title, .selection-title {
+                font-size: 2.6vmin;
+                margin-bottom: 0.3vmin;
+            }
+            .btn, .intro-btn {
+                font-size: 2.6vmin;
+                padding: 2vmin 4vmin;
+            }
+            .score-board {
+                font-size: 2.6vmin;
+                margin-bottom: 0.3vmin;
+            }
+            .message {
+                font-size: 2.6vmin;
+            }
+            .damage-text {
+                font-size: 2.2vmin;
+            }
+            .modal h2 {
+                font-size: 3.2vmin;
+            }
+            .modal p {
+                font-size: 2.6vmin;
+            }
+            .shooting-particle {
+                width: 1.6vmin;
+                height: 1.6vmin;
+            }
+            .game-controls {
+                padding: 0.3vmin;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .game-container {
+                max-height: 100vh;
+                padding: 0.5vmin; /* 수정: 패딩 감소 */
+                justify-content: space-evenly; /* 수정: 균등 배치 */
+            }
+            .game-area {
+                gap: 0.5vmin; /* 수정: 간격 감소 */
+            }
+            .target-area {
+                height: 28vh; /* 수정: 높이 조정 */
+                padding: 0.5vmin;
+            }
+            .selection-area {
+                height: 28vh; /* 수정: 높이 조정 */
+                padding: 0.5vmin;
+            }
+            .queue-area {
+                height: 10vh; /* 수정: 높이 조정 */
+                padding: 0.5vmin;
+                gap: 0.5vmin;
+            }
+            .target-lanes, .stacks-container {
+                max-height: 28vh;
+            }
+            .target-lane, .stack {
+                max-height: 28vh;
             }
             .target-block {
                 width: 6vmin;
@@ -568,68 +678,8 @@
                 font-size: 1.3vmin;
             }
             .target-title, .selection-title {
-                font-size: 2.6vmin;
-            }
-            .btn, .intro-btn {
-                font-size: 2.6vmin;
-                padding: 2vmin 4vmin;
-            }
-            .score-board {
-                font-size: 2.6vmin;
-            }
-            .message {
-                font-size: 2.6vmin;
-            }
-            .damage-text {
                 font-size: 2.2vmin;
-            }
-            .modal h2 {
-                font-size: 3.2vmin;
-            }
-            .modal p {
-                font-size: 2.6vmin;
-            }
-        }
-
-        @media (max-height: 600px) {
-            .game-container {
-                max-height: 100vh;
-            }
-            .target-area, .selection-area {
-                height: 20vmin;
-            }
-            .queue-area {
-                height: 7vmin;
-            }
-            .target-lanes, .stacks-container {
-                max-height: 20vmin;
-            }
-            .target-lane, .stack {
-                max-height: 20vmin;
-            }
-            .target-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(0,0,0,0.12);
-            }
-            .queue-slot, .queue-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(0,0,0,0.28);
-            }
-            .stack-block {
-                width: 5vmin;
-                height: 5vmin;
-                border: 0.2vmin solid rgba(255,255,255,0.25);
-            }
-            .block-number {
-                font-size: 1.8vmin;
-            }
-            .block-label {
-                font-size: 1.1vmin;
-            }
-            .target-title, .selection-title {
-                font-size: 2.2vmin;
+                margin-bottom: 0.3vmin;
             }
             .btn, .intro-btn {
                 font-size: 2.2vmin;
@@ -637,6 +687,7 @@
             }
             .score-board {
                 font-size: 2.2vmin;
+                margin-bottom: 0.3vmin;
             }
             .message {
                 font-size: 2.2vmin;
@@ -652,7 +703,7 @@
             }
             .stage-progress {
                 gap: 0.6vmin;
-                margin-bottom: 1vmin;
+                margin-bottom: 0.3vmin;
             }
             .stage-indicator {
                 width: 2vmin;
@@ -663,23 +714,41 @@
                 right: -0.9vmin;
                 font-size: 1.4vmin;
             }
+            .shooting-particle {
+                width: 1.4vmin;
+                height: 1.4vmin;
+            }
+            .game-controls {
+                padding: 0.3vmin;
+            }
         }
 
         @media (orientation: landscape) and (max-height: 500px) {
             .game-container {
-                padding: 1vmin;
+                padding: 0.5vmin;
+                justify-content: space-evenly; /* 수정: 균등 배치 */
             }
-            .target-area, .selection-area {
-                height: 18vmin;
+            .game-area {
+                gap: 0.5vmin;
+            }
+            .target-area {
+                height: 25vh; /* 수정: 높이 조정 */
+                padding: 0.5vmin;
+            }
+            .selection-area {
+                height: 25vh;
+                padding: 0.5vmin;
             }
             .queue-area {
-                height: 6.5vmin;
+                height: 10vh;
+                padding: 0.5vmin;
+                gap: 0.5vmin;
             }
             .target-lanes, .stacks-container {
-                max-height: 18vmin;
+                max-height: 25vh;
             }
             .target-lane, .stack {
-                max-height: 18vmin;
+                max-height: 25vh;
             }
         }
     </style>
@@ -992,6 +1061,9 @@
                                 this.updateTargetLanes();
                             }
                         }
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(50);
+                        }
                     }
 
                     if (queued.number > 0 && lane.length > 0 && lane[0].color === queued.color) {
@@ -1205,7 +1277,7 @@
                 close.onclick = () => {
                     root.innerHTML = '';
                     document.getElementById('gameContainer').style.display = 'none';
-                    document.getElementById('intro').style.display = 'flex';
+                    document.getElementById('intro').style.display = 'block';
                 };
 
                 const retry = document.createElement('button');
