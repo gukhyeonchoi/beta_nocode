@@ -95,7 +95,7 @@
 
         .target-lanes {
             display: flex;
-            gap: 1vmin;
+            gap: 0.5vmin;
             justify-content: center;
             align-items: flex-end;
             height: calc(100% - 2.8vmin);
@@ -117,10 +117,10 @@
         }
 
         .target-lane {
-            width: 6vmin;
+            width: 4.8vmin;
             display: flex;
             flex-direction: column-reverse;
-            gap: 0.6vmin;
+            gap: 0.5vmin;
             height: 100%;
             align-items: center;
             max-height: 19.8vmin;
@@ -128,8 +128,8 @@
         }
 
         .target-block {
-            width: 6vmin;
-            height: 6vmin;
+            width: 4.8vmin;
+            height: 4.8vmin;
             border-radius: 1vmin;
             border: 0.2vmin solid rgba(0,0,0,0.12);
             display: flex;
@@ -140,23 +140,27 @@
             color: white;
             text-shadow: 0.1vmin 0.1vmin 0.2vmin rgba(0,0,0,0.5);
             position: relative;
-            transition: transform 0.25s ease;
+            box-sizing: border-box;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
             flex-shrink: 0;
         }
 
         .target-block.attackable {
-            border: 0.3vmin solid #ffeb3b;
-            box-shadow: 0 0 1vmin rgba(255,235,59,0.35);
-            transform: translateY(-0.2vmin);
+            border-color: #ffeb3b;
+            box-shadow: 0 0 1vmin rgba(255,235,59,0.5);
+        }
+
+        .target-block.attackable:active {
+            box-shadow: 0 0 1.2vmin rgba(255,235,59,0.7);
         }
 
         .block-number {
-            font-size: 1.8vmin;
+            font-size: 1.6vmin;
             line-height: 1;
         }
 
         .block-label {
-            font-size: 1.2vmin;
+            font-size: 1.0vmin;
             opacity: 0.85;
         }
 
@@ -175,21 +179,22 @@
         }
 
         .queue-slot {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 4.8vmin;
+            height: 4.8vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin dashed rgba(0,0,0,0.28);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5vmin;
+            font-size: 1.3vmin;
             color: #6c757d;
             position: relative;
+            box-sizing: border-box;
         }
 
         .queue-block {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 4.8vmin;
+            height: 4.8vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(0,0,0,0.28);
             display: flex;
@@ -200,6 +205,7 @@
             color: white;
             text-shadow: 0.1vmin 0.1vmin 0.2vmin rgba(0,0,0,0.5);
             position: relative;
+            box-sizing: border-box;
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
@@ -255,7 +261,7 @@
         .stack {
             display: flex;
             flex-direction: column;
-            gap: 0.6vmin;
+            gap: 0.5vmin;
             align-items: center;
             height: 100%;
             max-height: 19.8vmin;
@@ -263,11 +269,11 @@
         }
 
         .stack-block {
-            width: 5.5vmin;
-            height: 5.5vmin;
+            width: 4.8vmin;
+            height: 4.8vmin;
             border-radius: 0.8vmin;
             border: 0.2vmin solid rgba(255,255,255,0.25);
-            transition: transform 0.18s ease, opacity 0.18s ease;
+            transition: box-shadow 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -276,20 +282,20 @@
             color: white;
             text-shadow: 0.1vmin 0.1vmin 0.2vmin rgba(0,0,0,0.45);
             position: relative;
+            box-sizing: border-box;
             z-index: 10;
             flex-shrink: 0;
         }
 
         .stack-block.top-block {
-            border: 0.2vmin solid #2ecc71;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0.8vmin rgba(46, 204, 113, 0.5);
             cursor: pointer;
             touch-action: manipulation;
-            padding: 0.5vmin;
         }
 
         .stack-block.top-block:active {
-            transform: scale(1.06);
-            box-shadow: 0 0 1vmin rgba(255,255,255,0.12);
+            box-shadow: 0 0 1.2vmin rgba(46, 204, 113, 0.7);
         }
 
         .stack-block:not(.top-block) {
@@ -317,7 +323,7 @@
             position: fixed;
             color: #ff4444;
             font-weight: bold;
-            font-size: 1.8vmin;
+            font-size: 1.6vmin;
             z-index: 2001;
             pointer-events: none;
             animation: damageFloat 1s ease-out forwards;
@@ -402,25 +408,28 @@
 
         @media (max-width: 400px) {
             .target-lane {
-                width: 7vmin;
+                width: 5.8vmin;
             }
             .target-block {
-                width: 7vmin;
-                height: 7vmin;
+                width: 5.8vmin;
+                height: 5.8vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.12);
             }
             .queue-slot, .queue-block {
-                width: 6.5vmin;
-                height: 6.5vmin;
+                width: 5.8vmin;
+                height: 5.8vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.28);
             }
             .stack-block {
-                width: 6.5vmin;
-                height: 6.5vmin;
+                width: 5.8vmin;
+                height: 5.8vmin;
+                border: 0.2vmin solid rgba(255,255,255,0.25);
             }
             .block-number {
-                font-size: 2vmin;
+                font-size: 1.8vmin;
             }
             .block-label {
-                font-size: 1.3vmin;
+                font-size: 1.1vmin;
             }
             .target-title, .selection-title {
                 font-size: 2vmin;
@@ -434,6 +443,9 @@
             }
             .message {
                 font-size: 2vmin;
+            }
+            .damage-text {
+                font-size: 1.8vmin;
             }
         }
 
@@ -456,15 +468,26 @@
             .target-lane, .stack {
                 max-height: 17.2vmin;
             }
-            .target-block, .queue-slot, .queue-block, .stack-block {
-                width: 6.5vmin;
-                height: 6.5vmin;
+            .target-block {
+                width: 4.2vmin;
+                height: 4.2vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.12);
+            }
+            .queue-slot, .queue-block {
+                width: 4.2vmin;
+                height: 4.2vmin;
+                border: 0.2vmin solid rgba(0,0,0,0.28);
+            }
+            .stack-block {
+                width: 4.2vmin;
+                height: 4.2vmin;
+                border: 0.2vmin solid rgba(255,255,255,0.25);
             }
             .block-number {
-                font-size: 1.7vmin;
+                font-size: 1.4vmin;
             }
             .block-label {
-                font-size: 1.1vmin;
+                font-size: 0.9vmin;
             }
             .target-title, .selection-title {
                 font-size: 1.7vmin;
@@ -485,6 +508,9 @@
             .modal p {
                 font-size: 1.7vmin;
             }
+            .damage-text {
+                font-size: 1.4vmin;
+            }
         }
     </style>
 </head>
@@ -504,21 +530,20 @@
 
         <div class="game-area">
             <div class="target-area">
-                <div class="target-title">타겟 블록 (아래에서 위로 쌓임)</div>
+                <div class="target-title">목표 블록(하단 부터 공격 가능)</div>
                 <div class="target-lanes" id="targetLanes"></div>
             </div>
 
             <div class="queue-area" id="queueArea"></div>
 
             <div class="selection-area">
-                <div class="selection-title">블록 선택 (맨 위만 터치, 대기열 제한)</div>
+                <div class="selection-title">블록 선택(상단만 터치 가능)</div>
                 <div class="stacks-container" id="stacksContainer"></div>
             </div>
         </div>
 
         <div class="game-controls">
             <button class="btn" onclick="resetGame()">다시 시작</button>
-            <button class="btn" onclick="game.toggleAutoMode()">자동 모드</button>
         </div>
 
         <div class="message" id="message"></div>
@@ -551,7 +576,6 @@
                 this.stacks = [];
                 this.attackQueue = [];
                 this.gameRunning = false;
-                this.autoMode = true;
                 this._queueScanTimer = null;
                 this._pendingUpdate = false;
                 this.handleBlockTouch = this.handleBlockTouch.bind(this);
@@ -616,7 +640,7 @@
                 this.gameRunning = true;
                 this.showMessage(`스테이지 ${this.stage} 시작!`, 'success');
                 this.updateDisplay();
-                if (this.autoMode) this.startQueueScanLoop();
+                this.startQueueScanLoop();
             }
 
             resetGame() {
@@ -668,7 +692,7 @@
                 this.showMessage(`블록(${topBlock.color}, ${topBlock.number}) 추가`, 'success');
                 this.updateQueue();
                 this.scheduleUpdate(() => {
-                    if (this.autoMode) this.scanAndFireOnce();
+                    this.scanAndFireOnce();
                     this.checkStageClear();
                 });
 
@@ -684,7 +708,7 @@
                     this._queueScanTimer = null;
                 }
                 this._queueScanTimer = setInterval(() => {
-                    if (!this.gameRunning || !this.autoMode) return;
+                    if (!this.gameRunning) return;
                     this.scanAndFireOnce();
                 }, 150);
             }
@@ -694,13 +718,6 @@
                     clearInterval(this._queueScanTimer);
                     this._queueScanTimer = null;
                 }
-            }
-
-            toggleAutoMode() {
-                this.autoMode = !this.autoMode;
-                this.showMessage(`자동 모드: ${this.autoMode ? 'On' : 'Off'}`, '');
-                if (this.autoMode) this.startQueueScanLoop();
-                else this.stopQueueScanLoop();
             }
 
             scanAndFireOnce() {
@@ -798,7 +815,6 @@
                     } else {
                         this.score += shotsFired;
                         if (queued.number > 0) {
-                            this.attackQueue[queueIndex].isFiring = false;
                             this.showMessage(`잔여값 ${queued.number} 남음`, 'warning');
                         } else {
                             this.attackQueue[queueIndex] = null;
