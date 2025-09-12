@@ -584,12 +584,12 @@
                     2: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
                     3: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45] },
                     4: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    5: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    6: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    7: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60, 75] },
-                    8: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 4, numberRange: [15, 30, 45, 60, 75] },
-                    9: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
-                    10: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75, 90] }
+                    5: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 5, numberRange: [15, 30, 45, 60] },
+                    6: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60] },
+                    7: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
+                    8: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75] },
+                    9: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75] },
+                    10: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 7, numberRange: [15, 30, 45, 60, 75, 90] }
                 };
                 this.colors = [];
                 this.targetNumbers = [];
@@ -995,7 +995,7 @@
 
                 const retry = document.createElement('button');
                 retry.className = 'btn btn-retry';
-                retry.textContent = '다시 플레이';
+                retry.textContent = '처음부터 플레이';
                 retry.onclick = () => {
                     root.innerHTML = '';
                     this.resetGame();
