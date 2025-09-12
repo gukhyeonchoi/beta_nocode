@@ -774,18 +774,8 @@
                     return;
                 }
 
-                const target = lane[0];
-                if (!target) {
-                    this.attackQueue[queueIndex].isFiring = false;
-                    this.scheduleUpdate();
-                    return;
-                }
-
-                const shotsTotal = queued.number;
-                const shotsToApply = Math.min(shotsTotal, target.number);
                 const shotInterval = 1000 / 15;
                 let shotsFired = 0;
-                const initialTargetId = target.id;
                 let lastShotTime = performance.now();
 
                 const fireLoop = (now) => {
@@ -795,8 +785,16 @@
                         return;
                     }
 
-                    const currentBottom = this.targetLanes[laneIndex] && this.targetLanes[laneIndex][0];
-                    if (!currentBottom || currentBottom.id !== initialTargetId) {
+                    const lane = this.targetLanes[laneIndex];
+                    if (!lane || lane.length === 0 || lane[0].color !== queued.color) {
+                        // 수정: 레인이 비었거나 색상이 다르면 공격 중단
+                        if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
+                        this.scheduleUpdate();
+                        return;
+                    }
+
+                    const currentBottom = lane[0];
+                    if (!currentBottom) {
                         if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
                         this.scheduleUpdate();
                         return;
@@ -814,10 +812,16 @@
 
                         if (currentBottom.number <= 0) {
                             this.targetLanes[laneIndex].shift();
+                            // 수정: 블록 제거 후 새 블록이 내려오면 색상 확인 후 계속 공격
+                            if (lane.length > 0 && lane[0].color === queued.color) {
+                                // 동일 색상이면 공격 지속
+                                this.updateTargetLanes();
+                            }
                         }
                     }
 
-                    if (shotsFired < shotsToApply && queued.number > 0 && currentBottom.number > 0) {
+                    if (queued.number > 0 && lane.length > 0 && lane[0].color === queued.color) {
+                        // 수정: 색상이 맞는 새 블록이 있으면 계속 공격
                         requestAnimationFrame(fireLoop);
                     } else {
                         this.score += shotsFired;
@@ -826,6 +830,7 @@
                         } else {
                             this.attackQueue[queueIndex] = null;
                         }
+                        if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
 
                         this.updateTargetLanes();
                         this.scheduleUpdate(() => {
