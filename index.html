@@ -925,6 +925,7 @@
     <div id="nameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:4000;">
         <div style="background:white; padding:18px; border-radius:10px; width:88%; max-width:360px; text-align:center; font-family: 'Pretendard', Arial, sans-serif;">
             <h3 style="margin:8px 0 6px 0; font-size:3.5vmin; color:#333;">이름을 입력하세요</h3>
+            <p id="congratsMessage" style="margin:0.8vmin 0; font-size:2.8vmin; color:#28a745; display:none;">축하합니다! 상위 10위 안에 들었습니다!</p>
             <input id="playerNameInput" placeholder="이름 (예: 홍길동)" style="width:88%; padding:10px; border-radius:6px; border:1px solid #dee2e6; font-size:2.8vmin; font-family: 'Pretendard', Arial, sans-serif;">
             <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
                 <button id="saveNameBtn" style="padding:10px 14px; border-radius:8px; border:none; background:#667eea; color:white; font-size:2.8vmin;">확인</button>
@@ -1394,10 +1395,32 @@
                     if (this.stage < 15) {
                         this.showStageClearModal(`스테이지 ${this.stage} 클리어! 점수: ${this.score}`);
                     } else {
-                        window.showNameModal(this.score, () => {
+                        this.checkTop10Score(this.score, () => {
                             this.showGameOverModal(`모든 스테이지 완료! 최종 점수: ${this.score}`);
                         });
                     }
+                }
+            }
+
+            async checkTop10Score(score, callback) {
+                try {
+                    const scoresRef = ref(db, 'scores');
+                    const topScoresQuery = query(scoresRef, orderByChild('score'), limitToLast(10));
+                    const snapshot = await get(topScoresQuery);
+                    const scores = [];
+                    snapshot.forEach(child => {
+                        scores.push(child.val().score);
+                    });
+                    scores.sort((a, b) => b - a);
+                    const minTop10Score = scores.length >= 10 ? scores[scores.length - 1] : 0;
+                    if (score > minTop10Score || scores.length < 10) {
+                        window.showNameModal(score, true, callback);
+                    } else {
+                        callback();
+                    }
+                } catch (error) {
+                    console.error('Error checking top 10 scores:', error.message);
+                    callback();
                 }
             }
 
@@ -1463,6 +1486,9 @@
                     root.innerHTML = '';
                     document.getElementById('gameContainer').style.display = 'none';
                     document.getElementById('intro').style.display = 'block';
+                    // Reset game state completely when exiting
+                    this.initGame();
+                    this.gameRunning = false;
                 };
 
                 const retry = document.createElement('button');
@@ -1508,7 +1534,7 @@
 
                 this.gameRunning = false;
                 this.stopQueueScanLoop();
-                window.showNameModal(this.score, () => {
+                this.checkTop10Score(this.score, () => {
                     this.showGameOverModal(`대기열이 가득 차 매칭 불가! 점수: ${this.score}`);
                 });
             }
@@ -1749,14 +1775,16 @@
             }
         };
 
-        window.showNameModal = function(score, callback = null) {
-            console.log(`Showing name modal for score: ${score}`);
+        window.showNameModal = function(score, showCongrats = false, callback = null) {
+            console.log(`Showing name modal for score: ${score}, showCongrats: ${showCongrats}`);
             const modal = document.getElementById('nameModal');
             const input = document.getElementById('playerNameInput');
             const saveBtn = document.getElementById('saveNameBtn');
             const cancelBtn = document.getElementById('cancelNameBtn');
+            const congratsMessage = document.getElementById('congratsMessage');
 
             modal.style.display = 'flex';
+            congratsMessage.style.display = showCongrats ? 'block' : 'none';
             input.value = '';
             input.focus();
 
