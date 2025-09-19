@@ -1196,8 +1196,8 @@
         
         <div class="game-instructions">
             <h3>📖 게임 방법</h3>
-            <p>• 하단 블록 스택에서 상단 블록만 터치 가능</p>
-            <p>• 선택한 블록이 대기열에 추가됩니다</p>
+            <p>• 하단 블록에서 상단 블록만 터치 가능</p>
+            <p>• 선택한 블록이 가운데 대기열에 추가됩니다</p>
             <p>• 같은 색상의 타겟이 있으면 자동으로 공격</p>
             <p>• 모든 타겟을 제거하면 다음 스테이지!</p>
         </div>
@@ -1543,7 +1543,7 @@
                     return;
                 }
 
-                const shotInterval = 1000 / 25; // 약간 느리게 조정하여 시각적 효과 개선
+                const shotInterval = 1000 / 27; // 약간 느리게 조정하여 시각적 효과 개선
                 let shotsFired = 0;
                 let lastShotTime = performance.now();
 
