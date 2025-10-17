@@ -1,2190 +1,1284 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-    <title>컬러 슈터 - Color Shooter</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Pretendard', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 8s ease-in-out infinite;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
-            -webkit-user-select: none;
-            user-select: none;
-            overflow: hidden;
-            position: relative;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* 배경 파티클 효과 */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-                radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-                radial-gradient(circle at 60% 90%, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-            background-size: 50px 50px, 80px 80px, 60px 60px, 90px 90px;
-            animation: float 20s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-100px); }
-        }
-
-        #intro {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1);
-            max-width: 90vw;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            z-index: 10;
-            position: relative;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        #intro::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            border-radius: 20px;
-            z-index: -1;
-        }
-
-        #intro h1 {
-            margin: 0;
-            font-size: 36px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 800;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #intro p {
-            margin: 0;
-            font-size: 18px;
-            color: #495057;
-            line-height: 1.6;
-        }
-
-        .game-instructions {
-            background: rgba(246, 248, 250, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 10px 0;
-            text-align: left;
-            font-size: 14px;
-            color: #495057;
-            line-height: 1.5;
-        }
-
-        .game-instructions h3 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 16px;
-        }
-
-        .intro-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            touch-action: manipulation;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .intro-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .intro-btn:hover::before {
-            left: 100%;
-        }
-
-        .intro-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .intro-btn.btn-ranking {
-            background: linear-gradient(135deg, #6c757d, #495057);
-            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
-        }
-
-        .game-container {
-            display: none;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 8px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1);
-            width: 100vw;
-            max-width: 95vw;
-            height: 100vh;
-            max-height: 95vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            overflow: hidden;
-            touch-action: manipulation;
-            z-index: 10;
-            position: relative;
-        }
-
-        .score-board {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .stage-progress {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            color: #333;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 0;
-            border-radius: 12px;
-        }
-
-        .stage-indicator {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid #6c757d;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .stage-indicator.cleared {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border-color: #28a745;
-            color: #fff;
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-        }
-
-        .stage-indicator.current {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            border-color: #007bff;
-            color: #fff;
-            transform: scale(1.2);
-            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1.2); }
-            50% { transform: scale(1.3); }
-        }
-
-        .stage-indicator:not(:last-child)::after {
-            content: '-';
-            position: absolute;
-            right: -12px;
-            color: #dee2e6;
-            font-size: 12px;
-        }
-
-        .game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .target-area {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 2px solid rgba(222, 226, 230, 0.8);
-            border-radius: 16px;
-            padding: 0px;
-            height: 33vh;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 8px;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .target-title {
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #495057;
-            font-size: 16px;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-
-        .target-lanes {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            align-items: flex-end;
-            height: calc(100% - 32px);
-            max-height: calc(33vh - 32px);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .target-lanes::after {
-            content: '';
-            position: absolute;
-            top: -40px;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(to bottom, #f8f9fa 0%, #f8f9fa 50%, transparent 100%);
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .target-lane {
-            width: 60px;
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 4px;
-            height: 100%;
-            align-items: flex-end;
-            padding-bottom: 0px;
-            max-height: calc(33vh - 32px);
-            overflow: visible;
-        }
-
-        .target-block {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 2px solid rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            position: relative;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, var(--color-start), var(--color-end));
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-
-        .target-block.attackable {
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 4px 12px rgba(0,0,0,0.2);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 4px 12px rgba(0,0,0,0.2); }
-            to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 6px 16px rgba(0,0,0,0.3); }
-        }
-
-        .target-block.attackable:active {
-            transform: scale(0.95);
-        }
-
-        .block-number {
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        .block-label {
-            font-size: 10px;
-            opacity: 0.85;
-        }
-
-        .queue-area {
-            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
-            border: 2px solid rgba(222, 226, 230, 0.3);
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            align-items: center;
-            height: 10vh; /* 기본 높이 줄임 */
-            width: 100%;
-            position: relative;
-            z-index: 30;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .queue-slot {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 2px dashed rgba(255,255,255,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: rgba(255,255,255,0.6);
-            position: relative;
-            box-sizing: border-box;
-            background: rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
-        }
-
-        .queue-block {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            position: relative;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, var(--color-start), var(--color-end));
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        .queue-block.added {
-            animation: slideIn 0.4s ease-out;
-        }
-
-        @keyframes slideIn {
-            0% { opacity: 0; transform: scale(0.6) translateY(-20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .selection-area {
-            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
-            border-radius: 16px;
-            padding: 12px;
-            color: white;
-            height: 35vh;
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .selection-title {
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 16px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .stacks-container {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 10px;
-            height: calc(100% - 28px);
-            max-height: 35vh;
-            overflow: hidden;
-            position: relative;
-            margin-top: 20px; /* 사각형을 아래로 이동 */
-        }
-
-        .stacks-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(to bottom, #343a40 0%, #343a40 70%, transparent 100%);
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .stack {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: center;
-            height: 100%;
-            max-height: 35vh;
-            width: 60px;
-            overflow: visible;
-        }
-
-        .stack-block {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            position: relative;
-            box-sizing: border-box;
-            z-index: 10;
-            flex-shrink: 0;
-            touch-action: manipulation;
-            background: linear-gradient(135deg, var(--color-start), var(--color-end));
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        .stack-block.top-block {
-            border-color: #2ecc71;
-            box-shadow: 0 0 20px rgba(46,204,113,0.6), 0 4px 12px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transform: translateY(-4px);
-            animation: breathe 3s ease-in-out infinite;
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: translateY(-4px); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .stack-block.top-block:active {
-            transform: scale(0.9) translateY(-4px);
-            box-shadow: 0 0 25px rgba(46,204,113,0.8), 0 6px 16px rgba(0,0,0,0.4);
-        }
-
-        .stack-block:not(.top-block) {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        /* 색상별 그라데이션 정의 */
-        .red { 
-            --color-start: #e74c3c; 
-            --color-end: #c0392b; 
-        }
-        .blue { 
-            --color-start: #3498db; 
-            --color-end: #2980b9; 
-        }
-        .green { 
-            --color-start: #2ecc71; 
-            --color-end: #27ae60; 
-        }
-        .yellow { 
-            --color-start: #f1c40f; 
-            --color-end: #e67e22;
-            color: #333 !important;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.5) !important;
-        }
-        .purple { 
-            --color-start: #9b59b6; 
-            --color-end: #8e44ad; 
-        }
-
-        .shooting-particle {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            z-index: 2500;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--particle-color);
-            background: radial-gradient(circle, var(--particle-color), var(--particle-color-dark));
-            animation: sparkle 0.3s ease-out;
-        }
-
-        @keyframes sparkle {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        .damage-text {
-            position: fixed;
-            color: #ff4444;
-            font-weight: 700;
-            font-size: 18px;
-            z-index: 2001;
-            pointer-events: none;
-            animation: damageFloat 1s ease-out forwards;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        @keyframes damageFloat {
-            0% { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-                color: #ff4444;
-            }
-            50% {
-                color: #ff6b6b;
-                transform: translateY(-20px) scale(1.2);
-            }
-            100% { 
-                opacity: 0; 
-                transform: translateY(-40px) scale(0.8);
-                color: #ff8a80;
-            }
-        }
-
-        .game-controls {
-            text-align: center;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            position: sticky;
-            bottom: 0;
-            z-index: 100;
-            width: 100%;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn {
-            color: white;
-            border: none;
-            padding: 12px 40px; /* 버튼 좌우 패딩 늘림 */
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 0 8px;
-            transition: all 0.3s ease;
-            touch-action: manipulation;
-            font-weight: 600;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-retry {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-        }
-
-        .btn-continue {
-            background: linear-gradient(135deg, #ffc107, #e0a800);
-            color: #333;
-        }
-
-        .btn-close {
-            background: linear-gradient(135deg, #6c757d, #545b62);
-        }
-
-        .btn-ranking {
-            background: linear-gradient(135deg, #6c757d, #545b62);
-        }
-
-        .btn-next {
-            background: linear-gradient(135deg, #28a745, #1e7e34);
-        }
-
-        .message {
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            min-height: 24px;
-            width: 100%;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-
-        .success { 
-            color: #28a745; 
-            animation: successPulse 0.6s ease-out;
-        }
-        .warning { 
-            color: #ffc107; 
-            animation: warningShake 0.5s ease-out;
-        }
-        .error { 
-            color: #dc3545; 
-            animation: errorShake 0.5s ease-out;
-        }
-
-        @keyframes successPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes warningShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        @keyframes errorShake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
-            20%, 40%, 60%, 80% { transform: translateX(3px); }
-        }
-
-        .modal-backdrop {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal {
-            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            padding: 24px;
-            border-radius: 16px;
-            width: 90vw;
-            max-width: 95vw;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            font-family: 'Pretendard', Arial, sans-serif;
-            border: 1px solid rgba(255,255,255,0.2);
-            animation: modalSlideIn 0.4s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from { 
-                opacity: 0; 
-                transform: scale(0.8) translateY(-20px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: scale(1) translateY(0); 
-            }
-        }
-
-        .modal h2 {
-            margin: 8px 0 16px 0;
-            font-size: 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-        }
-
-        .modal p {
-            margin: 12px 0 20px 0;
-            font-size: 16px;
-            color: #495057;
-            line-height: 1.5;
-        }
-
-        .modal .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .ranking-modal {
-            width: 90vw;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .ranking-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 16px 0;
-            font-size: 16px;
-            color: #333;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .ranking-table th,
-        .ranking-table td {
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .ranking-table th {
-            background: linear-gradient(135deg, #343a40, #495057);
-            color: white;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .ranking-table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        .ranking-table tr:nth-child(odd) {
-            background: #fff;
-        }
-
-        .ranking-table tr:hover {
-            background: #e3f2fd;
-            transform: scale(1.02);
-            transition: all 0.2s ease;
-        }
-
-        .score-input {
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #dee2e6;
-            border-radius: 12px;
-            margin: 12px 0;
-            width: 80%;
-            max-width: 300px;
-            font-family: 'Pretendard', Arial, sans-serif;
-            background: rgba(255,255,255,0.9);
-            transition: all 0.3s ease;
-        }
-
-        .score-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            background: rgba(255,255,255,1);
-        }
-
-        /* 모바일 최적화 */
-        @media (max-width: 768px) {
-            #intro {
-                padding: 30px 20px;
-            }
-            #intro h1 {
-                font-size: 28px;
-            }
-            #intro p {
-                font-size: 16px;
-            }
-            .intro-btn {
-                font-size: 16px;
-                padding: 14px 28px;
-            }
-            .game-container {
-                padding: 4px;
-                max-width: 100vw;
-                max-height: 100vh;
-                justify-content: space-evenly;
-            }
-            .game-area {
-                gap: 12px;
-            }
-            .score-board {
-                font-size: 16px;
-                margin-bottom: 4px;
-                padding: 8px 16px;
-            }
-            .stage-progress {
-                gap: 6px;
-                margin-bottom: 4px;
-                font-size: 10px;
-                padding: 4px 0;
-            }
-            .stage-indicator {
-                width: 20px;
-                height: 20px;
-                font-size: 10px;
-            }
-            .stage-indicator:not(:last-child)::after {
-                right: -9px;
-                font-size: 10px;
-            }
-            .target-area {
-                height: 38vh;
-                padding: 8px;
-                margin-bottom: 8px;
-            }
-            .target-lanes {
-                max-height: calc(38vh - 28px);
-                gap: 8px;
-            }
-            .target-lane {
-                width: 50px;
-                max-height: calc(38vh - 28px);
-            }
-            .target-block {
-                width: 50px;
-                height: 50px;
-                border-radius: 10px;
-            }
-            .queue-area {
-                height: 12vh; /* 모바일 높이 줄임 */
-                padding: 8px;
-                gap: 8px;
-            }
-            .queue-slot, .queue-block {
-                width: 50px;
-                height: 50px;
-                border-radius: 10px;
-            }
-            .selection-area {
-                height: 38vh;
-                padding: 8px;
-            }
-            .stacks-container {
-                max-height: calc(38vh - 24px);
-                gap: 8px;
-                margin-top: 20px; /* 모바일에서도 사각형을 아래로 이동 */
-            }
-            .stack {
-                max-height: calc(38vh - 24px);
-                width: 50px;
-            }
-            .stack-block {
-                width: 50px;
-                height: 50px;
-                border-radius: 10px;
-            }
-            .block-number {
-                font-size: 16px;
-            }
-            .block-label {
-                font-size: 8px;
-            }
-            .target-title, .selection-title {
-                font-size: 14px;
-                margin-bottom: 6px;
-            }
-            .btn {
-                font-size: 14px;
-                padding: 10px 30px; /* 모바일 버튼 좌우 패딩 늘림 */
-            }
-            .message {
-                font-size: 14px;
-                margin-top: 4px;
-            }
-            .damage-text {
-                font-size: 16px;
-            }
-            .modal h2 {
-                font-size: 20px;
-            }
-            .modal p {
-                font-size: 14px;
-            }
-            .shooting-particle {
-                width: 16px;
-                height: 16px;
-            }
-            .game-controls {
-                padding: 6px;
-            }
-            .ranking-table {
-                font-size: 14px;
-            }
-            .ranking-table th,
-            .ranking-table td {
-                padding: 8px;
-            }
-            .score-input {
-                font-size: 14px;
-                padding: 10px;
-            }
-        }
-
-        @media (max-height: 600px) {
-            .game-container {
-                padding: 4px;
-                max-height: 100vh;
-                justify-content: space-evenly;
-            }
-            .game-area {
-                gap: 8px;
-            }
-            .target-area {
-                height: 35vh;
-                padding: 6px;
-                margin-bottom: 6px;
-            }
-            .selection-area {
-                height: 35vh;
-                padding: 6px;
-            }
-            .queue-area {
-                height: 10vh; /* 작은 화면 높이 줄임 */
-                padding: 6px;
-                gap: 6px;
-            }
-            .target-lanes, .stacks-container {
-                max-height: calc(35vh - 20px);
-                gap: 6px;
-            }
-            .target-lane, .stack {
-                max-height: calc(35vh - 20px);
-                width: 45px;
-            }
-            .target-block, .queue-slot, .queue-block, .stack-block {
-                width: 45px;
-                height: 45px;
-                border-radius: 8px;
-            }
-            .block-number {
-                font-size: 14px;
-            }
-            .block-label {
-                font-size: 7px;
-            }
-            .target-title, .selection-title {
-                font-size: 12px;
-                margin-bottom: 4px;
-            }
-            .btn {
-                font-size: 12px;
-                padding: 8px 24px; /* 작은 화면 버튼 좌우 패딩 늘림 */
-            }
-            .score-board {
-                font-size: 14px;
-                margin-bottom: 4px;
-                padding: 6px 12px;
-            }
-            .message {
-                font-size: 12px;
-                margin-top: 4px;
-            }
-            .modal h2 {
-                font-size: 18px;
-            }
-            .modal p {
-                font-size: 12px;
-            }
-            .damage-text {
-                font-size: 14px;
-            }
-            .stage-progress {
-                gap: 4px;
-                margin-bottom: 4px;
-                font-size: 8px;
-            }
-            .stage-indicator {
-                width: 18px;
-                height: 18px;
-                font-size: 8px;
-            }
-            .stage-indicator:not(:last-child)::after {
-                right: -8px;
-                font-size: 8px;
-            }
-            .shooting-particle {
-                width: 14px;
-                height: 14px;
-            }
-            .game-controls {
-                padding: 4px;
-            }
-            .ranking-table {
-                font-size: 12px;
-            }
-            .ranking-table th,
-            .ranking-table td {
-                padding: 6px;
-            }
-            .score-input {
-                font-size: 12px;
-                padding: 8px;
-            }
-            .stacks-container {
-                margin-top: 20px; /* 작은 화면에서도 사각형을 아래로 이동 */
-            }
-        }
-
-        @media (orientation: landscape) and (max-height: 500px) {
-            .game-container {
-                padding: 2px;
-                justify-content: space-evenly;
-            }
-            .game-area {
-                gap: 6px;
-            }
-            .target-area {
-                height: 32vh;
-                padding: 4px;
-                margin-bottom: 4px;
-            }
-            .selection-area {
-                height: 32vh;
-                padding: 4px;
-            }
-            .queue-area {
-                height: 8vh; /* 가로 모드 높이 줄임 */
-                padding: 4px;
-                gap: 4px;
-            }
-            .target-lanes, .stacks-container {
-                max-height: calc(32vh - 16px);
-            }
-            .target-lane, .stack {
-                max-height: calc(32vh - 16px);
-            }
-            .ranking-table {
-                font-size: 10px;
-            }
-            .ranking-table th,
-            .ranking-table td {
-                padding: 4px;
-            }
-            .score-input {
-                font-size: 10px;
-                padding: 6px;
-            }
-            .stacks-container {
-                margin-top: 20px; /* 가로 모드에서도 사각형을 아래로 이동 */
-            }
-            .btn {
-                padding: 8px 24px; /* 가로 모드 버튼 좌우 패딩 늘림 */
-            }
-        }
-
-        /* 터치 피드백 개선 */
-        .stack-block.top-block:active,
-        .target-block.attackable:active,
-        .btn:active,
-        .intro-btn:active {
-            transition: transform 0.1s ease;
-        }
-
-        /* 성능 최적화를 위한 will-change */
-        .shooting-particle {
-            will-change: transform, opacity;
-        }
-
-        .damage-text {
-            will-change: transform, opacity;
-        }
-
-        .stack-block.top-block {
-            will-change: transform;
-        }
-
-        /* 접근성 개선 */
-        .btn:focus,
-        .intro-btn:focus,
-        .stack-block.top-block:focus {
-            outline: 3px solid rgba(102, 126, 234, 0.5);
-            outline-offset: 2px;
-        }
-
-        /* 로딩 상태 */
-        .loading {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid transparent;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <title>게임 선택 화면</title>
+  <link rel="stylesheet" href="https://cdn.pixabay.com/font/pretendard.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fce7f3 100%);
+      font-family: 'Pretendard', 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      padding-top: env(safe-area-inset-top); /* iOS 상단 Notch */
+      padding-bottom: env(safe-area-inset-bottom); /* iOS/Android 하단 바 */
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      overflow-y: auto; /* 전체 스크롤 부드럽게 */
+      -webkit-overflow-scrolling: touch; /* iOS 스크롤 모멘텀 */
+    }
+
+    /* 배경 효과 */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fce7f3 100%);
+      animation: bgShift 15s ease infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 100px;
+      opacity: 0.6;
+      animation: cloudFloat var(--duration) ease-in-out infinite;
+      box-shadow: 0 5px 30px rgba(147, 197, 253, 0.3);
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 100px;
+    }
+
+    .cloud::before {
+      width: 40px;
+      height: 40px;
+      top: -20px;
+      left: 8px;
+    }
+
+    .cloud::after {
+      width: 48px;
+      height: 48px;
+      top: -24px;
+      right: 8px;
+    }
+
+    @keyframes cloudFloat {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-15px) translateX(20px); }
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #93c5fd, transparent);
+      border-radius: 50%;
+      animation: sparkleAnim var(--duration) ease-in-out infinite;
+      opacity: 0;
+      box-shadow: 0 0 8px rgba(147, 197, 253, 0.8);
+    }
+
+    @keyframes sparkleAnim {
+      0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.3) rotate(180deg); }
+    }
+
+    .floating-circle {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(147, 197, 253, 0.3);
+      animation: floatCircle var(--duration) ease-in-out infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes floatCircle {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+      50% { transform: translate(var(--tx), var(--ty)) scale(1.1); opacity: 0.6; }
+    }
+
+    .water-drop {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(147, 197, 253, 0.4));
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(45deg);
+      animation: dropFall var(--duration) ease-in infinite;
+      opacity: 0.7;
+      box-shadow: 0 2px 6px rgba(147, 197, 253, 0.4);
+    }
+
+    @keyframes dropFall {
+      0% { transform: translateY(-15px) rotate(45deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(100vh) rotate(45deg); opacity: 0; }
+    }
+
+    /* 타이틀 - 한 줄 처리 */
+    h1 {
+      color: #0ea5e9;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 1px;
+      text-shadow: 
+        0 2px 8px rgba(14, 165, 233, 0.3),
+        0 0 30px rgba(147, 197, 253, 0.2);
+      z-index: 10;
+      margin: 2vh 0 2vh 0;
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: titleFloat 3s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes titleFloat {
+      0%, 100% { transform: translateX(-50%); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* 사용자 정보 */
+    .user-info {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(147, 197, 253, 0.3);
+      padding: 6px 12px;
+      border-radius: 15px;
+      box-shadow: 
+        0 6px 24px rgba(14, 165, 233, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideInRight 0.6s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .user-info span {
+      color: #0369a1;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .user-info button {
+      background: linear-gradient(135deg, #fb7185, #f472b6);
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 12px rgba(244, 114, 182, 0.3);
+    }
+
+    .user-info button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(244, 114, 182, 0.5);
+    }
+
+    /* 3D 도넛 컨테이너 */
+     .btn-container {
+  position: absolute;
+  left: 50%;
+  top: 35%;
+  transform: translate(-50%, -50%) rotateX(-45deg); /* 회전 방향 반대로 */
+  width: clamp(350px, 50vw, 500px);
+  height: clamp(350px, 50vw, 500px);
+  perspective: 1000px;
+  z-index: 10;
+  transform-style: preserve-3d;
+}
+
+    /* 게임 카드 - 높이 증가 */
+.game-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: calc(-1 * clamp(60px, 9vw, 90px));
+  margin-top: calc(-1 * clamp(100px, 15vw, 150px));
+  width: clamp(140px, 20vw, 200px);
+  height: clamp(300px, 40vw, 400px);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 2px solid rgba(147, 197, 253, 0.4);
+  box-shadow: 
+    0 8px 16px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  will-change: transform, opacity, scale;
+  transform: rotateY(0deg);
+  -webkit-font-smoothing: antialiased; /* 전체 카드 폰트 스무딩 */
+  backface-visibility: hidden; /* 카드 뒷면 숨김으로 왜곡 최소화 */
+}
+
+    .game-card:hover {
+      transform: scale(1.2) translateZ(10px) rotateY(0deg);
+      box-shadow: 
+        0 12px 24px rgba(14, 165, 233, 0.25),
+        0 0 0 2px rgba(147, 197, 253, 0.3);
+      border-color: rgba(56, 189, 248, 0.6);
+    }
+
+    /* 게임 제목 */
+    .game-title {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 700;
+  color: #0284c7;
+  margin-bottom: 8px;
+  text-align: center;
+  -webkit-font-smoothing: antialiased; /* 폰트 스무딩 */
+  transform: rotateX(45deg) scaleY(1.414) translateZ(0.01px); /* 3D 왜곡 보정 */
+  backface-visibility: hidden; /* 뒷면 숨김으로 왜곡 최소화 */
+}
+
+
+    /* 게임 버튼 */
+.game-btn {
+  padding: 6px 0;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 8px rgba(56, 189, 248, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  -webkit-font-smoothing: antialiased; /* 폰트 스무딩 */
+  transform: rotateX(45deg) scaleY(1.414) translateZ(0.01px); /* 3D 왜곡 보정 */
+  backface-visibility: hidden; /* 뒷면 숨김으로 왜곡 최소화 */
+}
+
+    .game-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 6px 12px rgba(56, 189, 248, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .game-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 랭킹 리스트 - 가시성 개선 */
+.ranking-list {
+  margin-top: 10px;
+  font-size: clamp(0.4rem, 0.9vw, 0.6rem);
+  color: #0369a1;
+  text-align: left;
+  width: 100%;
+  padding: 0 8px;
+  line-height: 1.4;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  -webkit-font-smoothing: antialiased; /* 폰트 스무딩 */
+  transform: rotateX(45deg) scaleY(1.414) translateZ(0.01px); /* 3D 왜곡 보정 */
+  backface-visibility: hidden; /* 뒷면 숨김으로 왜곡 최소화 */
+  height: 100px; /* 고정 높이: 8개 항목 들어갈 공간 (약 12.5px * 8) */
+  overflow-y: auto; /* 스크롤 가능 */
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+}
+
+.ranking-list p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  background: rgba(147, 197, 253, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(147, 197, 253, 0.25);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 12px; /* 각 항목 최소 높이 */
+}
+
+.ranking-list span:nth-child(2) { /* 이름 부분에만 최대 너비 적용 */
+  max-width: 50%; /* 이름이 너무 길면 ...으로 잘림 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking-list p.my-rank { /* 내 랭킹 강조 클래스 */
+  background: rgba(167, 243, 208, 0.6);
+  border-color: rgba(34, 197, 94, 0.7);
+  font-weight: 700;
+  color: #065f46;
+}
+
+    .ranking-list p:hover {
+      background: rgba(147, 197, 253, 0.25);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateX(2px);
+    }
+
+    .ranking-list span.rank {
+      font-weight: 800;
+      color: #0284c7;
+    }
+
+    .ranking-list span.score {
+      font-weight: 700;
+      color: #7c3aed;
+    }
+
+    .ranking-list:empty::before {
+      content: "아직 랭킹이 없습니다! 🎮 첫 번째 플레이어가 되어보세요.";
+      display: block;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.5rem;
+      color: #94a3b8;
+      background: linear-gradient(135deg, rgba(240, 249, 255, 0.3), transparent);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 모달 */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(186, 230, 253, 0.3);
+      backdrop-filter: blur(15px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 25px 15px;
+      border-radius: 15px;
+      text-align: center;
+      width: 85%;
+      max-width: clamp(280px, 40vw, 350px);
+      box-shadow: 
+        0 12px 30px rgba(14, 165, 233, 0.2),
+        0 0 0 2px rgba(147, 197, 253, 0.3);
+      animation: modalBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 2px solid rgba(147, 197, 253, 0.5);
+    }
+
+    @keyframes modalBounce {
+      0% { transform: scale(0.5) translateY(50px); opacity: 0; }
+      70% { transform: scale(1.05) translateY(-10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-content h2 {
+      color: #0284c7;
+      margin: 0 0 8px 0;
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 800;
+    }
+
+    .modal-content p {
+      color: #64748b;
+      font-size: clamp(0.8rem, 1.5vw, 1rem);
+      margin: 0 0 15px 0;
+    }
+
+    .modal-content input {
+      width: calc(100% - 15px);
+      padding: 10px 12px;
+      margin: 8px 0;
+      border: 2px solid rgba(147, 197, 253, 0.5);
+      border-radius: 12px;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      font-family: 'Pretendard', sans-serif;
+      background: rgba(240, 249, 255, 0.8);
+      color: #0c4a6e;
+      outline: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .modal-content input::placeholder {
+      color: #94a3b8;
+    }
+
+    .modal-content input:focus {
+      border-color: #38bdf8;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .modal-content .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .modal-content button {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 12px;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content button:active {
+      transform: scale(0.95);
+    }
+
+    .modal-content button.primary {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(56, 189, 248, 0.4);
+    }
+
+    .modal-content button.primary:hover {
+      box-shadow: 0 7px 15px rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .modal-content button.secondary {
+      background: rgba(226, 232, 240, 0.8);
+      color: #64748b;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .modal-content button.secondary:hover {
+      background: rgba(203, 213, 225, 0.9);
+      color: #475569;
+    }
+
+    /* 반응형 */
+    @media (max-width: 600px) {
+      .btn-container {
+    max-width: 350px;
+    height: 350px;
+  }
+  .game-card {
+    width: 140px;
+    height: 350px; /* 모바일에서도 높이 증가 */
+    padding: 6px;
+  }
+      .game-number {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+      }
+      .game-btn {
+        padding: 5px 0;
+        font-size: 0.9rem;
+      }
+            .ranking-list {
+        font-size: 0.5rem;
+        line-height: 1.4;
+        gap: 4px;
+      }
+      .ranking-list p {
+        padding: 4px 6px;
+      }
+      .user-info {
+        top: 8px;
+        right: 8px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+      }
+      .modal-content {
+        padding: 20px 12px;
+        max-width: 280px;
+      }
+      h1 {
+        font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .btn-container {
+    max-width: 500px;
+    height: 500px;
+  }
+  .game-card {
+    width: 200px;
+    height: 500px; /* 데스크탑 높이 증가 */
+    padding: 10px;
+  }
+      .game-number {
+        width: 30px;
+        height: 0px;
+        font-size: 0rem;
+      }
+      .game-btn {
+        padding: 8px 0;
+        font-size: 1.1rem;
+      }
+      .ranking-list {
+        font-size: 0.7rem;
+        line-height: 1.4;
+        gap: 6px;
+      }
+      .ranking-list p {
+        padding: 6px 10px;
+      }
+      .user-info {
+        top: 12px;
+        right: 12px;
+        padding: 10px 15px;
+        font-size: 1.1rem;
+      }
+      .modal-content {
+        padding: 30px 20px;
+        max-width: 350px;
+      }
+      h1 {
+        font-size: clamp(2rem, 4vw, 2.5rem);
+      }
+    }
+.view-full-ranking {
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #a5b4fc, #c4b5fd);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(165, 180, 252, 0.3);
+  transform: rotateX(45deg) scaleY(1.414);
+}
+
+.view-full-ranking:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(165, 180, 252, 0.4);
+}
+
+.full-ranking-modal .modal-content {
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.full-ranking-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.full-ranking-list p {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(147, 197, 253, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(147, 197, 253, 0.2);
+  font-size: 0.9rem;
+}
+
+#game-frame {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 0;  /* 초기 숨김 */
+}
+#game-frame.visible {
+  opacity: 1;
+  visibility: visible;
+  display: block;
+}
+
+@media (max-height: 600px) {
+  .full-ranking-modal .modal-content {
+    max-height: 70vh;
+  }
+}
+  </style>
 </head>
 <body>
-    <div id="intro">
-        <h1>🎯 컬러 슈터</h1>
-        <p>색상을 매칭하여 타겟 블록을 모두 제거하세요!</p>
-        
-        <div class="game-instructions">
-            <h3>📖 게임 방법</h3>
-            <p>• 하단 블록에서 상단 블록만 터치 가능</p>
-            <p>• 선택한 블록이 가운데 대기열에 추가됩니다</p>
-            <p>• 같은 색상의 타겟이 있으면 자동으로 공격</p>
-            <p>• 모든 타겟을 제거하면 다음 스테이지!</p>
-        </div>
-        
-        <button class="intro-btn" id="startGameBtn">🚀 게임 시작</button>
-        <button class="intro-btn btn-ranking" id="showRankingBtn">🏆 랭킹 보기</button>
-    </div>
+  <!-- 배경 효과 -->
+  <div class="animated-bg"></div>
+  
+  <!-- 사용자 정보 -->
+  <div class="user-info" id="user-info" style="display: none;">
+    <span id="user-name-display"></span>
+    <button id="change-name-btn">변경</button>
+  </div>
 
-    <div class="game-container" id="gameContainer">
-        <div class="score-board">
-            <span>🎯 스테이지: <span id="stage">1</span></span>
-            <span style="margin-left: 20px;">⭐ 점수: <span id="score">0</span></span>
-            <span style="margin-left: 20px;">🎨 색상: <span id="colorCount">3</span></span>
-        </div>
-        <div class="stage-progress" id="stageProgress"></div>
+  <!-- 타이틀 -->
+  <h1>🎮 게임을 선택하세요</h1>
 
-        <div class="game-area">
-            <div class="target-area">
-                <div class="target-title">🎯 목표 블록 (하단부터 공격 가능)</div>
-                <div class="target-lanes" id="targetLanes"></div>
-            </div>
-
-            <div class="queue-area" id="queueArea"></div>
-
-            <div class="selection-area">
-                <div class="selection-title">🎮 블록 선택 (상단만 터치 가능)</div>
-                <div class="stacks-container" id="stacksContainer"></div>
-            </div>
-        </div>
-
-        <div class="game-controls">
-            <button class="btn btn-retry" id="resetGameBtn">🔄 다시 시작</button>
-        </div>
-
-        <div class="message" id="message"></div>
-    </div>
-
-    <div id="modalRoot"></div>
-
-    <div id="nameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); align-items:center; justify-content:center; z-index:4000;">
-    <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%); padding:24px; border-radius:16px; width:88%; max-width:360px; text-align:center; font-family: 'Pretendard', Arial, sans-serif; box-shadow:0 20px 40px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2);">
-        <h3 style="margin:8px 0 6px 0; font-size:20px; background:linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:700;">🎉 이름을 입력하세요</h3>
-        <input id="playerNameInput" placeholder="이름을 입력하세요 (예: 홍길동)" style="width:88%; padding:12px; border-radius:12px; border:2px solid #dee2e6; font-size:16px; font-family: 'Pretendard', Arial, sans-serif; background:rgba(255,255,255,0.9); transition:all 0.3s ease;">
-        <div style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
-            <button id="saveNameBtn" style="padding:12px 20px; border-radius:12px; border:none; background:linear-gradient(135deg, #667eea, #764ba2); color:white; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 12px rgba(102, 126, 234, 0.3);">✅ 확인</button>
-            <button id="cancelNameBtn" style="padding:12px 20px; border-radius:12px; border:none; background:linear-gradient(135deg, #6c757d, #545b62); color:white; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 12px rgba(108, 117, 125, 0.3);">❌ 취소</button>
-        </div>
-    </div>
+  <!-- 3D 도넛 컨테이너 -->
+  <div class="btn-container" id="carousel">
+    <div class="game-card" data-game="game1" data-angle="0">
+      <div class="game-title">컬러 슈터</div>
+      <button class="game-btn" data-game="game1">게임 시작</button>
+      <button class="view-full-ranking" data-game="game1">전체 랭킹 보기</button> <!-- 새 버튼 추가 -->
+<div class="ranking-list" id="ranking-game1">
+  <p><span class="rank">🥇 1위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+  <p><span class="rank">🥈 2위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+  <p><span class="rank">🥉 3위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+  <p id="my-rank-game1"><span class="rank">내 등수</span> <span>-</span> <span class="score">-</span></p> <!-- 내 등수 추가 -->
 </div>
+    </div>
+    <div class="game-card" data-game="game2" data-angle="72">
+      <div class="game-title">탕탕 특공대</div>
+      <button class="game-btn" data-game="game2">게임 시작</button>
+      <button class="view-full-ranking" data-game="game2">전체 랭킹 보기</button> <!-- 새 버튼 추가 -->
+      <div class="ranking-list" id="ranking-game2">
+        <p><span class="rank">🥇 1위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥈 2위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥉 3위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p id="my-rank-game2"><span class="rank">내 등수</span> <span>-</span> <span class="score">-</span></p> <!-- 내 등수 추가 -->
+      </div>
+    </div>
+    <div class="game-card" data-game="game3" data-angle="144">
+      <div class="game-title">싸워라! 2048</div>
+      <button class="game-btn" data-game="game3">게임 시작</button>
+      <button class="view-full-ranking" data-game="game3">전체 랭킹 보기</button> <!-- 새 버튼 추가 -->
+      <div class="ranking-list" id="ranking-game3">
+        <p><span class="rank">🥇 1위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥈 2위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥉 3위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p id="my-rank-game3"><span class="rank">내 등수</span> <span>-</span> <span class="score">-</span></p> <!-- 내 등수 추가 -->
+      </div>
+    </div>
+    <div class="game-card" data-game="game4" data-angle="216">
+      <div class="game-title">기억력 카드게임</div>
+      <button class="game-btn" data-game="game4">게임 시작</button>
+      <button class="view-full-ranking" data-game="game4">전체 랭킹 보기</button> <!-- 새 버튼 추가 -->
+      <div class="ranking-list" id="ranking-game4">
+        <p><span class="rank">🥇 1위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥈 2위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥉 3위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p id="my-rank-game4"><span class="rank">내 등수</span> <span>-</span> <span class="score">-</span></p> <!-- 내 등수 추가 -->
+      </div>
+    </div>
+    <div class="game-card" data-game="game5" data-angle="288">
+      <div class="game-title">사과 게임</div>
+      <button class="game-btn" data-game="game5">게임 시작</button>
+      <button class="view-full-ranking" data-game="game5">전체 랭킹 보기</button> <!-- 새 버튼 추가 -->
+      <div class="ranking-list" id="ranking-game5">
+        <p><span class="rank">🥇 1위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥈 2위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p><span class="rank">🥉 3위</span> <span>로딩 중...</span> <span class="score">-</span></p>
+        <p id="my-rank-game5"><span class="rank">내 등수</span> <span>-</span> <span class="score">-</span></p> <!-- 내 등수 추가 -->
+      </div>
+    </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getDatabase, ref, push, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+  <!-- 이름 입력 모달 -->
+  <div id="name-modal" class="modal">
+    <div class="modal-content">
+      <h2>✨ 플레이어 이름</h2>
+      <p>게임 기록에 사용될 이름을 입력해주세요. 최대 4글자</p>
+      <input type="text" id="player-name-input" placeholder="이름을 입력하세요 (최대 4글자)" maxlength="4">
+      <div class="button-group">
+        <button id="cancel-name-btn" class="secondary">취소</button>
+        <button id="save-name-btn" class="primary">확인</button>
+      </div>
+    </div>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-M1czGNwh3-xMLHgmEdVmfbHZAmQioiQ",
-            authDomain: "gukhyeon-ce3ba.firebaseapp.com",
-            databaseURL: "https://gukhyeon-ce3ba-default-rtdb.firebaseio.com",
-            projectId: "gukhyeon-ce3ba",
-            storageBucket: "gukhyeon-ce3ba.firebasestorage.app",
-            messagingSenderId: "751956972723",
-            appId: "1:751956972723:web:cedb2e5f483529732e8cc6",
-            measurementId: "G-JBBLJNDGY1"
-        };
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getDatabase, ref, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        class ColorShooterGame {
-            constructor() {
-                this.fullColorPool = ['red', 'blue', 'green', 'yellow', 'purple'];
-                this.stage = 1;
-                this.score = 0;
-                this.clearedStages = new Set();
-                this.stageConfig = {
-                    1: { colors: 2, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
-                    2: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
-                    3: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 3, numberRange: [15, 30, 45] },
-                    4: { colors: 3, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    5: { colors: 4, queueSlots: 3, lanes: 3, blocksPerLane: 4, numberRange: [15, 30, 45, 60] },
-                    6: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60] },
-                    7: { colors: 4, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
-                    8: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 5, numberRange: [15, 30, 45, 60, 75] },
-                    9: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75] },
-                    10: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75, 90] },
-                    11: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 6, numberRange: [15, 30, 45, 60, 75, 90] },
-                    12: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 7, numberRange: [15, 30, 45, 60, 75, 90] },
-                    13: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 8, numberRange: [15, 30, 45, 60, 75, 90, 120] },
-                    14: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 9, numberRange: [15, 30, 45, 60, 75, 90, 120] },
-                    15: { colors: 5, queueSlots: 4, lanes: 4, blocksPerLane: 10, numberRange: [15, 30, 45, 60, 75, 90, 120] }
-                };
-                this.colors = [];
-                this.targetNumbers = [];
-                this.stackNumbers = [];
-                this.targetLanes = [];
-                this.stacks = [];
-                this.attackQueue = [];
-                this.gameRunning = false;
-                this._queueScanTimer = null;
-                this._pendingUpdate = false;
-                this._particleCount = 0;
-                this._maxParticles = 30; // 파티클 수 제한으로 성능 최적화
-                this.handleBlockTouch = this.handleBlockTouch.bind(this);
-                this.colorParticleMap = {
-                    red: { color: '#e74c3c', dark: '#c0392b' },
-                    blue: { color: '#3498db', dark: '#2980b9' },
-                    green: { color: '#2ecc71', dark: '#27ae60' },
-                    yellow: { color: '#f1c40f', dark: '#e67e22' },
-                    purple: { color: '#9b59b6', dark: '#8e44ad' }
-                };
-            }
-
-            showMessage(text, type = '') {
-                const messageEl = document.getElementById('message');
-                messageEl.textContent = text;
-                messageEl.className = `message ${type}`;
-                
-                // 3초 후 메시지 지우기
-                setTimeout(() => {
-                    if (messageEl.textContent === text) {
-                        messageEl.textContent = '';
-                        messageEl.className = 'message';
-                    }
-                }, 3000);
-            }
-
-            clearAllParticles() {
-                const particles = document.querySelectorAll('.shooting-particle');
-                particles.forEach(p => {
-                    if (p.parentNode) {
-                        p.parentNode.removeChild(p);
-                        this._particleCount = Math.max(0, this._particleCount - 1);
-                    }
-                });
-                this._particleCount = 0;
-                console.log(`All particles cleared, count: ${this._particleCount}`);
-            }
-
-            initGame() {
-                this.stopQueueScanLoop();
-                this.stage = 1;
-                this.score = 0;
-                this.clearedStages.clear();
-                this._pendingUpdate = false;
-                this.clearAllParticles();
-                this.initStage();
-                this.updateDisplay();
-                this.updateStageProgress();
-                this.showMessage('🎮 새 게임을 시작합니다!', 'success');
-                console.log(`Game initialized, stage: ${this.stage}`);
-            }
-
-            initStage() {
-                const config = this.stageConfig[this.stage];
-                this.colors = this.fullColorPool.slice(0, config.colors);
-                this.targetNumbers = config.numberRange;
-                this.stackNumbers = config.numberRange;
-                this.targetLanes = Array(config.lanes).fill().map(() => []);
-                this.stacks = Array(config.lanes).fill().map(() => []);
-                this.attackQueue = Array(config.queueSlots).fill(null);
-                this.clearAllParticles();
-                this.generateStageBlocks(config);
-                this.updateQueueUI();
-                this.updateStageProgress();
-                console.log(`Stage ${this.stage} initialized, lanes: ${config.lanes}, slots: ${config.queueSlots}`);
-            }
-
-            generateStageBlocks(config) {
-                const colorTotals = {};
-                this.colors.forEach(color => colorTotals[color] = 0);
-
-                for (let lane = 0; lane < config.lanes; lane++) {
-                    this.targetLanes[lane] = [];
-                    for (let i = 0; i < config.blocksPerLane; i++) {
-                        const color = this.colors[Math.floor(Math.random() * this.colors.length)];
-                        const number = this.targetNumbers[Math.floor(Math.random() * this.targetNumbers.length)];
-                        this.targetLanes[lane].push({ color, number, id: Date.now() + lane * 1000 + i });
-                        colorTotals[color] += number;
-                    }
-                }
-
-                const stackBlocks = [];
-                this.colors.forEach(color => {
-                    let remaining = colorTotals[color];
-                    while (remaining > 0) {
-                        const number = Math.min(
-                            this.stackNumbers[Math.floor(Math.random() * this.stackNumbers.length)],
-                            remaining
-                        );
-                        stackBlocks.push({ color, number, id: Date.now() + Math.random() });
-                        remaining -= number;
-                    }
-                });
-
-                stackBlocks.sort(() => Math.random() - 0.5);
-                const blocksPerStack = Math.ceil(stackBlocks.length / config.lanes);
-                for (let s = 0; s < config.lanes; s++) {
-                    this.stacks[s] = stackBlocks.slice(s * blocksPerStack, (s + 1) * blocksPerStack);
-                }
-                console.log(`Blocks generated, colors: ${this.colors}, targetLanes: ${JSON.stringify(this.targetLanes.map(lane => lane.map(b => b.color)))}`);
-            }
-
-            startGame() {
-                this.gameRunning = true;
-                this.clearAllParticles();
-                this.showMessage(`🚀 스테이지 ${this.stage} 시작!`, 'success');
-                console.log(`스테이지 ${this.stage} 시작!`);
-                this.updateDisplay();
-                this.updateStageProgress();
-                this.startQueueScanLoop();
-            }
-
-            resetGame() {
-                this.stopQueueScanLoop();
-                this.gameRunning = false;
-                this._pendingUpdate = false;
-                this.clearAllParticles();
-                this.initGame();
-                this.startGame();
-                console.log(`Game reset`);
-            }
-
-            getAvailableQueueSlot() {
-                return this.attackQueue.findIndex(slot => slot === null || slot.number <= 0);
-            }
-
-            selectBlock(stackIndex) {
-                if (!this.gameRunning) {
-                    this.showMessage('❌ 게임이 시작되지 않았습니다!', 'error');
-                    console.log('게임이 시작되지 않았습니다!');
-                    return false;
-                }
-
-                if (stackIndex < 0 || stackIndex >= this.stacks.length) {
-                    this.showMessage(`❌ 잘못된 스택: ${stackIndex + 1}`, 'error');
-                    console.log(`잘못된 스택: ${stackIndex + 1}`);
-                    return false;
-                }
-
-                const slotIndex = this.getAvailableQueueSlot();
-                if (slotIndex === -1) {
-                    this.showMessage('⚠️ 대기열이 가득 찼습니다!', 'warning');
-                    console.log('대기열이 가득 찼습니다!');
-                    return false;
-                }
-
-                const stack = this.stacks[stackIndex];
-                if (!stack || stack.length === 0) {
-                    this.showMessage(`❌ 스택 ${stackIndex + 1}이 비었습니다!`, 'error');
-                    console.log(`스택 ${stackIndex + 1}이 비었습니다!`);
-                    return false;
-                }
-
-                const topBlock = stack[0];
-                const queueBlock = { 
-                    ...topBlock, 
-                    stackIndex, 
-                    id: Date.now() + Math.random(), 
-                    isFiring: false,
-                    queuePosition: slotIndex 
-                };
-                this.attackQueue[slotIndex] = queueBlock;
-                this.stacks[stackIndex].shift();
-
-                this.showMessage(`✅ ${topBlock.color} 블록 (${topBlock.number}) 추가`, 'success');
-                console.log(`블록(${topBlock.color}, ${topBlock.number}) 추가`);
-                this.updateQueue();
-                this.scheduleUpdate(() => {
-                    this.scanAndFireOnce();
-                    this.checkStageClear();
-                });
-
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(50);
-                }
-                return true;
-            }
-
-            startQueueScanLoop() {
-                if (this._queueScanTimer) {
-                    clearInterval(this._queueScanTimer);
-                    this._queueScanTimer = null;
-                }
-                this._queueScanTimer = setInterval(() => {
-                    if (!this.gameRunning) return;
-                    this.scanAndFireOnce();
-                }, 120); // 약간 빠르게 조정
-            }
-
-            stopQueueScanLoop() {
-                if (this._queueScanTimer) {
-                    clearInterval(this._queueScanTimer);
-                    this._queueScanTimer = null;
-                }
-                this.clearAllParticles();
-            }
-
-            scanAndFireOnce() {
-                if (!this.gameRunning) return;
-
-                const firingColors = new Set();
-                for (let qIndex = 0; qIndex < this.attackQueue.length; qIndex++) {
-                    const q = this.attackQueue[qIndex];
-                    if (!q || q.isFiring || q.number <= 0) {
-                        if (q && q.isFiring) firingColors.add(q.color);
-                        continue;
-                    }
-
-                    if (firingColors.has(q.color)) continue;
-
-                    let foundLane = -1;
-                    for (let laneIndex = 0; laneIndex < this.targetLanes.length; laneIndex++) {
-                        const lane = this.targetLanes[laneIndex];
-                        if (lane.length > 0 && lane[0].color === q.color) {
-                            foundLane = laneIndex;
-                            break;
-                        }
-                    }
-
-                    if (foundLane !== -1) {
-                        this.attackQueue[qIndex].isFiring = true;
-                        firingColors.add(q.color);
-                        this.fireFromQueueIndex(qIndex, foundLane);
-                    }
-                }
-
-                this.checkQueueStuck();
-            }
-
-            fireFromQueueIndex(queueIndex, laneIndex) {
-    const queued = this.attackQueue[queueIndex];
-    if (!queued || queued.number <= 0) {
-        this.attackQueue[queueIndex] = null;
-        this.scheduleUpdate();
-        return;
-    }
-    const lane = this.targetLanes[laneIndex];
-    if (!lane || lane.length === 0) {
-        this.attackQueue[queueIndex].isFiring = false;
-        this.scheduleUpdate();
-        return;
-    }
-    const shotInterval = 1000 / 27;
-    let shotsFired = 0;
-    let lastShotTime = performance.now();
-    const fireLoop = (now) => {
-        if (!this.gameRunning) {
-            if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
-            this.scheduleUpdate();
-            return;
-        }
-        const lane = this.targetLanes[laneIndex];
-        if (!lane || lane.length === 0 || lane[0].color !== queued.color) {
-            if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
-            this.scheduleUpdate();
-            return;
-        }
-        const currentBottom = lane[0];
-        if (!currentBottom) {
-            if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
-            this.scheduleUpdate();
-            return;
-        }
-        if (now - lastShotTime >= shotInterval) {
-            if (this._particleCount < this._maxParticles) {
-                this.createSingleParticle(queueIndex, laneIndex, queued.color);
-                this._particleCount++;
-            }
-            currentBottom.number -= 1;
-            queued.number -= 1;
-            shotsFired++;
-            this.score += 1;
-            this.updateDisplay();
-            lastShotTime = now;
-            this.updateTargetLanes();
-            this.updateQueue();
-            if (currentBottom.number <= 0) {
-                this.targetLanes[laneIndex].shift();
-                if (lane.length > 0 && lane[0].color === queued.color) {
-                    this.updateTargetLanes();
-                }
-            }
-            if ('vibrate' in navigator) {
-                navigator.vibrate(30);
-            }
-        }
-        if (queued.number > 0 && lane.length > 0 && lane[0].color === queued.color) {
-            requestAnimationFrame(fireLoop);
-        } else {
-            this.showDamageText(laneIndex, shotsFired);
-            this.showMessage(`🎯 매칭 성공! +${shotsFired}점`, 'success');
-            console.log(`매칭 성공! +${shotsFired}점`);
-            if (queued.number > 0) {
-                console.log(`잔여값 ${queued.number} 남음`);
-            } else {
-                this.attackQueue[queueIndex] = null;
-            }
-            if (this.attackQueue[queueIndex]) this.attackQueue[queueIndex].isFiring = false;
-            this.updateTargetLanes();
-            this.scheduleUpdate(() => {
-                this.checkStageClear();
-            });
-        }
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-M1czGNwh3-xMLHgmEdVmfbHZAmQioiQ",
+      authDomain: "gukhyeon-ce3ba.firebaseapp.com",
+      databaseURL: "https://gukhyeon-ce3ba-default-rtdb.firebaseio.com",
+      projectId: "gukhyeon-ce3ba",
+      storageBucket: "gukhyeon-ce3ba.firebasestorage.app",
+      messagingSenderId: "751956972723",
+      appId: "1:751956972723:web:cedb2e5f483529732e8cc6",
+      measurementId: "G-JBBLJNDGY1"
     };
-    requestAnimationFrame(fireLoop);
-}
 
-            createSingleParticle(queueIndex, laneIndex, color) {
-                const queueArea = document.getElementById('queueArea');
-                const targetLanes = document.getElementById('targetLanes');
-                console.log(`Creating particle: queueIndex=${queueIndex}, laneIndex=${laneIndex}, color=${color}`);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-                const slotEl = queueArea.children[queueIndex];
-                if (!slotEl) {
-                    console.warn(`Queue slot ${queueIndex} not found`);
-                    this._particleCount = Math.max(0, this._particleCount - 1);
-                    return;
-                }
-                const slotRect = slotEl.getBoundingClientRect();
-                const startX = slotRect.left + slotRect.width / 2 + window.scrollX;
-                const startY = slotRect.top + slotRect.height / 2 + window.scrollY;
-
-                const laneEl = targetLanes.children[laneIndex];
-                if (!laneEl) {
-                    console.warn(`Lane ${laneIndex} not found`);
-                    this._particleCount = Math.max(0, this._particleCount - 1);
-                    return;
-                }
-                const bottomBlock = laneEl.children[0];
-                if (!bottomBlock) {
-                    console.warn(`Bottom block in lane ${laneIndex} not found`);
-                    this._particleCount = Math.max(0, this._particleCount - 1);
-                    return;
-                }
-                const targetRect = bottomBlock.getBoundingClientRect();
-                const targetX = targetRect.left + targetRect.width / 2 + window.scrollX;
-                const targetY = targetRect.top + targetRect.height / 2 + window.scrollY;
-
-                const p = document.createElement('div');
-                p.className = 'shooting-particle';
-                const particleColors = this.colorParticleMap[color];
-                if (particleColors) {
-                    p.style.setProperty('--particle-color', particleColors.color);
-                    p.style.setProperty('--particle-color-dark', particleColors.dark);
-                } else {
-                    p.style.setProperty('--particle-color', '#ffffff');
-                    p.style.setProperty('--particle-color-dark', '#cccccc');
-                }
-                p.style.left = startX + 'px';
-                p.style.top = startY + 'px';
-                p.style.opacity = '1';
-
-                document.body.appendChild(p);
-
-                const duration = 250; // 약간 빨라짐
-                const start = performance.now();
-
-                function easeOutCubic(t) {
-                    return 1 - Math.pow(1 - t, 3);
-                }
-
-                const frame = (now) => {
-                    const t = Math.min(1, (now - start) / duration);
-                    const eased = easeOutCubic(t);
-                    const curX = startX + (targetX - startX) * eased + (Math.random() - 0.5) * 2;
-                    const curY = startY + (targetY - startY) * eased + (Math.random() - 0.5) * 2;
-                    p.style.left = curX + 'px';
-                    p.style.top = curY + 'px';
-                    p.style.opacity = String(1 - eased * 0.3);
-                    const scale = 1 - 0.4 * eased;
-                    p.style.transform = `translate(-50%,-50%) scale(${scale})`;
-
-                    if (t < 1) {
-                        requestAnimationFrame(frame);
-                    } else {
-                        if (p.parentNode) {
-                            p.parentNode.removeChild(p);
-                            this._particleCount = Math.max(0, this._particleCount - 1);
-                        }
-                    }
-                };
-
-                requestAnimationFrame(frame.bind(this));
-
-                // 안전장치
-                setTimeout(() => {
-                    if (p.parentNode) {
-                        p.parentNode.removeChild(p);
-                        this._particleCount = Math.max(0, this._particleCount - 1);
-                    }
-                }, duration + 100);
-            }
-
-            showDamageText(laneIndex, damage) {
-                const targetLanesEl = document.getElementById('targetLanes');
-                const laneEl = targetLanesEl.children[laneIndex];
-                if (!laneEl) return;
-
-                const bottomBlock = laneEl.children[0];
-                if (!bottomBlock) return;
-
-                const rect = bottomBlock.getBoundingClientRect();
-                const tx = rect.left + rect.width / 2;
-                const ty = rect.top + rect.height / 2;
-
-                const d = document.createElement('div');
-                d.className = 'damage-text';
-                d.textContent = `-${damage}`;
-                d.style.left = tx + 'px';
-                d.style.top = ty + 'px';
-                document.body.appendChild(d);
-
-                setTimeout(() => {
-                    if (d.parentNode) d.parentNode.removeChild(d);
-                }, 1000);
-            }
-
-            checkStageClear() {
-    const allCleared = this.targetLanes.every(lane => lane.length === 0);
-    if (allCleared) {
-        this.clearedStages.add(this.stage);
-        this.gameRunning = false;
-        this.stopQueueScanLoop();
-        if (this.stage < 15) {
-            this.showStageClearModal(`스테이지 ${this.stage} 클리어! 점수: ${this.score}`);
-        } else {
-            saveScore(playerName, this.score).then(() => {
-                this.showGameOverModal(`🎮 모든 스테이지 완료! 최종 점수: ${this.score}`);
-                showRankingModal(this.score);
-            });
-        }
+    // 배경 효과 생성
+    function createBackgroundEffects() {
+      const body = document.body;
+      for (let i = 0; i < 5; i++) {
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        cloud.style.width = `${Math.random() * 50 + 30}px`;
+        cloud.style.height = `${Math.random() * 15 + 10}px`;
+        cloud.style.left = `${Math.random() * 100}%`;
+        cloud.style.top = `${Math.random() * 80}%`;
+        cloud.style.setProperty('--duration', `${Math.random() * 6 + 8}s`);
+        cloud.style.animationDelay = `${Math.random() * 3}s`;
+        body.appendChild(cloud);
+      }
+      for (let i = 0; i < 15; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = `${Math.random() * 100}%`;
+        sparkle.style.top = `${Math.random() * 100}%`;
+        sparkle.style.setProperty('--duration', `${Math.random() * 1.5 + 1}s`);
+        sparkle.style.animationDelay = `${Math.random() * 1.5}s`;
+        body.appendChild(sparkle);
+      }
+      for (let i = 0; i < 6; i++) {
+        const circle = document.createElement('div');
+        circle.className = 'floating-circle';
+        const size = Math.random() * 50 + 20;
+        circle.style.width = `${size}px`;
+        circle.style.height = `${size}px`;
+        circle.style.left = `${Math.random() * 100}%`;
+        circle.style.top = `${Math.random() * 100}%`;
+        circle.style.setProperty('--duration', `${Math.random() * 5 + 4}s`);
+        circle.style.setProperty('--tx', `${Math.random() * 30 - 15}px`);
+        circle.style.setProperty('--ty', `${Math.random() * 30 - 15}px`);
+        circle.style.animationDelay = `${Math.random() * 2}s`;
+        body.appendChild(circle);
+      }
+      function createBackgroundEffects() {
+  const body = document.body;
+  for (let i = 0; i < 5; i++) {
+    const cloud = document.createElement('div');
+    cloud.className = 'cloud';
+    cloud.style.width = `${Math.random() * 50 + 30}px`;
+    cloud.style.height = `${Math.random() * 15 + 10}px`;
+    cloud.style.left = `${Math.random() * 100}%`;
+    cloud.style.top = `${Math.random() * 80}%`;
+    cloud.style.setProperty('--duration', `${Math.random() * 6 + 8}s`);
+    cloud.style.animationDelay = `${Math.random() * 3}s`;
+    body.appendChild(cloud);
+  }
+  for (let i = 0; i < 15; i++) {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.style.left = `${Math.random() * 100}%`;
+    sparkle.style.top = `${Math.random() * 100}%`;
+    sparkle.style.setProperty('--duration', `${Math.random() * 1.5 + 1}s`);
+    sparkle.style.animationDelay = `${Math.random() * 1.5}s`;
+    body.appendChild(sparkle);
+  }
+  for (let i = 0; i < 6; i++) {
+    const circle = document.createElement('div');
+    circle.className = 'floating-circle';
+    const size = Math.random() * 50 + 20;
+    circle.style.width = `${size}px`;
+    circle.style.height = `${size}px`;
+    circle.style.left = `${Math.random() * 100}%`;
+    circle.style.top = `${Math.random() * 100}%`;
+    circle.style.setProperty('--duration', `${Math.random() * 5 + 4}s`);
+    circle.style.setProperty('--tx', `${Math.random() * 30 - 15}px`);
+    circle.style.setProperty('--ty', `${Math.random() * 30 - 15}px`);
+    circle.style.animationDelay = `${Math.random() * 2}s`;
+    body.appendChild(circle);
+  }
+  // water-drop: setInterval 대신 requestAnimationFrame으로 부드럽게
+  let lastDropTime = 0;
+  function createDrop(timestamp) {
+    if (timestamp - lastDropTime >= 1200) {  // 1.2초 간격 유지
+      const drop = document.createElement('div');
+      drop.className = 'water-drop';
+      drop.style.left = `${Math.random() * 100}%`;
+      drop.style.setProperty('--duration', `${Math.random() * 1.2 + 1.5}s`);
+      body.appendChild(drop);
+      setTimeout(() => drop.remove(), 3000);
+      lastDropTime = timestamp;
     }
+    requestAnimationFrame(createDrop);
+  }
+  requestAnimationFrame(createDrop);
 }
-
-            
-
-            showStageClearModal(message) {
-                const root = document.getElementById('modalRoot');
-                root.innerHTML = '';
-
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop';
-
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `<h2>🎉 스테이지 클리어!</h2><p>${message}</p>`;
-
-                const actions = document.createElement('div');
-                actions.className = 'modal-actions';
-
-                const retry = document.createElement('button');
-                retry.className = 'btn btn-retry';
-                retry.textContent = '🏠홈으로';
-                retry.onclick = () => {
-                    root.innerHTML = '';
-                    this.resetGame();
-                };
-
-                const next = document.createElement('button');
-                next.className = 'btn btn-next';
-                next.textContent = '▶️다음 스테이지';
-                next.onclick = () => {
-                    root.innerHTML = '';
-                    this.advanceStage();
-                };
-
-                actions.appendChild(retry);
-                actions.appendChild(next);
-                modal.appendChild(actions);
-                backdrop.appendChild(modal);
-                root.appendChild(backdrop);
-
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([200, 100, 200]);
-                }
-            }
-
-            showGameOverModal(message) {
-    const root = document.getElementById('modalRoot');
-    root.innerHTML = '';
-    const backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop';
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = `<h2>🎮 게임 오버</h2><p style="white-space: pre-line;">${message}</p>`;
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-    const retry = document.createElement('button');
-    retry.className = 'btn btn-retry';
-    retry.textContent = '🔄재도전';
-    retry.onclick = () => {
-        root.innerHTML = '';
-        this.resetGame();
-    };
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn btn-continue';
-    continueBtn.textContent = '📺 광고 보고 이어하기';
-    continueBtn.onclick = () => {
-        root.innerHTML = '';
-        this.showAdModal();
-    };
-    actions.appendChild(retry);
-    actions.appendChild(continueBtn);
-    modal.appendChild(actions);
-    backdrop.appendChild(modal);
-    root.appendChild(backdrop);
-}
-
-            showAdModal() {
-                const root = document.getElementById('modalRoot');
-                root.innerHTML = '';
-
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop';
-
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <h2>📺 광고 문의</h2>
-                    <p>이 영역 광고 문의 받습니다! 😄<br>지금은 광고가 없으니 그냥 재미로 즐겨주세요!</p>
-                `;
-
-                const actions = document.createElement('div');
-                actions.className = 'modal-actions';
-
-                const close = document.createElement('button');
-                close.className = 'btn btn-close';
-                close.textContent = '❌ 닫기';
-                close.onclick = () => {
-                    root.innerHTML = '';
-                    this.resetGame();
-                };
-
-                actions.appendChild(close);
-                modal.appendChild(actions);
-                backdrop.appendChild(modal);
-                root.appendChild(backdrop);
-
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([50]);
-                }
-            }
-
-            advanceStage() {
-                this.stage++;
-                this.gameRunning = false;
-                this.clearAllParticles();
-                this.stopQueueScanLoop();
-                this.initStage();
-                this.startGame();
-                console.log(`Advanced to stage: ${this.stage}`);
-            }
-
-            checkQueueStuck() {
-    if (this.getAvailableQueueSlot() !== -1) {
-        this.scheduleUpdate();
-        return;
     }
-    for (let q of this.attackQueue) {
-        if (!q || q.number <= 0) continue;
-        for (let lane of this.targetLanes) {
-            if (lane.length > 0 && lane[0].color === q.color) {
-                this.scheduleUpdate();
-                return;
-            }
-        }
-    }
-    this.gameRunning = false;
-    this.stopQueueScanLoop();
-    this.showMessage('❌ 대기열이 가득 차 매칭 불가!', 'error');
-    saveScore(playerName, this.score).then(() => {
-        this.showGameOverModal(`🎮 게임 오버! 최종 점수: ${this.score}`);
-        showRankingModal(this.score);
+
+    // 랭킹 로드
+function loadRankings(gameId) {
+  const scoresRef = ref(db, 'scores/' + gameId);
+  const allScoresQuery = query(scoresRef, orderByChild('score'));
+  
+  onValue(allScoresQuery, (snapshot) => {
+    const playerBestScores = {}; // 플레이어별 최고 점수 추적
+    
+    snapshot.forEach((child) => {
+  const data = child.val();
+  const playerName = data.name || '익명';  // ✅ undefined 방지
+  
+  // 같은 이름의 기록 중 최고 점수만 유지
+  if (!playerBestScores[playerName] || data.score > playerBestScores[playerName].score) {
+    playerBestScores[playerName] = data;
+  }
+});
+    
+    // 객체를 배열로 변환하고 점수 순으로 정렬 (내림차순)
+    const allRankings = Object.values(playerBestScores).sort((a, b) => b.score - a.score);
+
+    // 상위 3위 표시
+    const rankingDiv = document.getElementById('ranking-' + gameId);
+    const medals = ['🥇', '🥈', '🥉'];
+    
+    // 내 등수 요소를 제외한 기존 랭킹만 제거
+    const myRankElem = document.getElementById('my-rank-' + gameId);
+    Array.from(rankingDiv.children).forEach(child => {
+      if (child.id !== 'my-rank-' + gameId) {
+        child.remove();
+      }
     });
+    
+    const top8 = allRankings.slice(0, 8);  // ✅ 최대 8개 제한
+if (top8.length === 0) {
+  const emptyMsg = document.createElement('p');
+  emptyMsg.style.textAlign = 'center';
+  emptyMsg.style.color = '#94a3b8';
+  emptyMsg.textContent = '아직 기록이 없어요';
+  rankingDiv.insertBefore(emptyMsg, myRankElem);
+} else {
+  top8.forEach((entry, index) => {  // ✅ 8위까지 표시
+    const p = document.createElement('p');
+    const medal = index < 3 ? medals[index] : '';  // ✅ 4위부터는 메달 없음
+    const rankText = medal ? `${medal} ${index + 1}위` : `${index + 1}위`;
+    const name = (entry.name || '익명').slice(0, 8);
+    p.innerHTML = `<span class="rank">${rankText}</span> <span>${name}</span> <span class="score">${entry.score}점</span>`;
+    
+    // 내 등수 요소 앞에 삽입
+    rankingDiv.insertBefore(p, myRankElem);
+  });
+  // 빈 공간 채우기: 8개 미만 시 플레이스홀더 추가
+  for (let i = top8.length; i < 8; i++) {
+    const placeholder = document.createElement('p');
+    placeholder.className = 'placeholder';
+    placeholder.innerHTML = `<span class="rank">---</span> <span>---</span> <span class="score">0점</span>`;
+    placeholder.style.opacity = 0.5;
+    rankingDiv.insertBefore(placeholder, myRankElem);
+  }
 }
 
-            updateStageProgress() {
-                const stageProgress = document.getElementById('stageProgress');
-                stageProgress.innerHTML = '';
-                for (let i = 1; i <= 15; i++) {
-                    const indicator = document.createElement('div');
-                    indicator.className = `stage-indicator ${
-                        i === this.stage ? 'current' : this.clearedStages.has(i) ? 'cleared' : ''
-                    }`;
-                    indicator.dataset.stage = i;
-                    indicator.textContent = i;
-                    stageProgress.appendChild(indicator);
-                }
-            }
-
-            updateDisplay() {
-                document.getElementById('stage').textContent = this.stage;
-                document.getElementById('score').textContent = this.score;
-                document.getElementById('colorCount').textContent = this.stageConfig[this.stage].colors;
-                this.updateTargetLanes();
-                this.updateStageProgress();
-                this.scheduleUpdate();
-            }
-
-            updateTargetLanes() {
-                const targetContainer = document.getElementById('targetLanes');
-                targetContainer.innerHTML = '';
-                
-                this.targetLanes.forEach((lane, laneIndex) => {
-                    const laneEl = document.createElement('div');
-                    laneEl.className = 'target-lane';
-                    lane.forEach((block, idx) => {
-                        const blockEl = document.createElement('div');
-                        blockEl.className = `target-block ${block.color}`;
-                        blockEl.innerHTML = `<div class="block-number">${block.number}</div>`;
-                        if (idx === 0) {
-                            blockEl.classList.add('attackable');
-                        }
-                        laneEl.appendChild(blockEl);
-                    });
-                    targetContainer.appendChild(laneEl);
-                });
-            }
-
-            updateQueueUI() {
-                const queueArea = document.getElementById('queueArea');
-                queueArea.innerHTML = '';
-                const config = this.stageConfig[this.stage];
-                for (let i = 0; i < config.queueSlots; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'queue-slot';
-                    slot.id = `queue${i}`;
-                    slot.textContent = 'Empty';
-                    queueArea.appendChild(slot);
-                }
-                this.updateQueue();
-            }
-
-            scheduleUpdate(callback = null) {
-                if (this._pendingUpdate) return;
-                this._pendingUpdate = true;
-                requestAnimationFrame(() => {
-                    this.updateStacksAndQueue();
-                    this._pendingUpdate = false;
-                    if (callback) callback();
-                    this.checkStageClear();
-                });
-            }
-
-            updateStacksAndQueue() {
-                const stacksContainer = document.getElementById('stacksContainer');
-                stacksContainer.innerHTML = '';
-                
-                this.stacks.forEach((stack, stackIndex) => {
-                    const stackEl = document.createElement('div');
-                    stackEl.className = 'stack';
-                    for (let blockIndex = 0; blockIndex < stack.length; blockIndex++) {
-                        const block = stack[blockIndex];
-                        const blockEl = document.createElement('div');
-                        blockEl.className = `stack-block ${block.color}`;
-                        blockEl.innerHTML = `<div class="block-number">${block.number}</div>`;
-                        blockEl.dataset.stackIndex = stackIndex;
-                        if (blockIndex === 0 && this.gameRunning && this.getAvailableQueueSlot() !== -1) {
-                            blockEl.classList.add('top-block');
-                            blockEl.addEventListener('pointerdown', (e) => {
-                                e.preventDefault();
-                                this.handleBlockTouch(stackIndex);
-                            }, { passive: false, once: true });
-                        } else {
-                            blockEl.style.cursor = 'not-allowed';
-                        }
-                        stackEl.appendChild(blockEl);
-                    }
-                    stacksContainer.appendChild(stackEl);
-                });
-                this.updateQueue();
-            }
-
-            updateQueue() {
-                const queueArea = document.getElementById('queueArea');
-                for (let i = 0; i < this.attackQueue.length; i++) {
-                    const slot = queueArea.children[i];
-                    if (!slot) continue;
-                    slot.innerHTML = '';
-                    slot.className = 'queue-slot';
-                    if (this.attackQueue[i] && this.attackQueue[i].number > 0) {
-                        const block = this.attackQueue[i];
-                        slot.className = `queue-block ${block.color} ${!block.isFiring ? 'added' : ''}`;
-                        slot.innerHTML = `<div class="block-number">${block.number}</div>`;
-                    } else {
-                        slot.innerHTML = 'Empty';
-                        if (this.attackQueue[i]) {
-                            this.attackQueue[i] = null;
-                        }
-                    }
-                }
-            }
-
-            handleBlockTouch(stackIndex) {
-                console.log(`Block touched, stack: ${stackIndex}`);
-                this.selectBlock(stackIndex);
-            }
+    // 내 등수 계산 및 표시
+    if (!myRankElem) return;
+    
+    if (window.playerName) {
+      const myEntries = allRankings.filter(entry => entry.name === window.playerName);
+      
+      if (myEntries.length > 0) {
+        const myBestScore = Math.max(...myEntries.map(e => e.score));
+        const myRank = allRankings.findIndex(entry => entry.score === myBestScore && entry.name === window.playerName) + 1;
+        
+        myRankElem.innerHTML = `<span class="rank">내 등수: ${myRank}위</span> <span class="score">${myBestScore}점</span>`;
+        myRankElem.classList.add('my-rank');
+        myRankElem.style.display = 'flex';
+        
+        // 1~3위 안에 있으면 해당 랭킹도 강조
+        if (myRank <= 3 && myRank <= rankingDiv.children.length) {
+          rankingDiv.children[myRank - 1].classList.add('my-rank');
         }
+      } else {
+        myRankElem.innerHTML = `<span class="rank">내 등수</span> <span class="score">기록 없음</span>`;
+        myRankElem.classList.add('my-rank');
+        myRankElem.style.display = 'flex';
+      }
+    } else {
+      myRankElem.innerHTML = `<span class="rank">내 등수</span> <span class="score">이름을 입력해주세요</span>`;
+      myRankElem.classList.remove('my-rank');
+      myRankElem.style.display = 'flex';
+    }
+  });
+}
+// 전체 랭킹 모달
+const fullRankingModal = document.getElementById('full-ranking-modal');
+const fullRankingTitle = document.getElementById('full-ranking-title');
+const fullRankingList = document.getElementById('full-ranking-list');
+const closeFullRankingBtn = document.getElementById('close-full-ranking');
 
-        let game;
-
-        function startIntroGame() {
-    showNameModal(() => {
-        document.getElementById('intro').style.display = 'none';
-        document.getElementById('gameContainer').style.display = 'flex';
-        if (!game) {
-            game = new ColorShooterGame();
-            game.initGame();
-        }
-        game.startGame();
+function showFullRanking(gameId) {
+  fullRankingTitle.textContent = `전체 랭킹 - ${document.querySelector(`[data-game="${gameId}"] .game-title`).textContent}`;
+  const scoresRef = ref(db, 'scores/' + gameId);
+  const topScoresQuery = query(scoresRef, orderByChild('score'), limitToLast(8)); // 최대 8위
+  onValue(topScoresQuery, (snapshot) => {
+  const playerBestScores = {};
+  
+  snapshot.forEach((child) => {
+    const data = child.val();
+    const playerName = data.name || '익명';
+    
+    if (!playerBestScores[playerName] || data.score > playerBestScores[playerName].score) {
+      playerBestScores[playerName] = data;
+    }
+  });
+  
+  const rankings = Object.values(playerBestScores).sort((a, b) => b.score - a.score);
+    fullRankingList.innerHTML = '';
+    const medals = ['🥇', '🥈', '🥉'];
+    rankings.forEach((entry, index) => {
+      const medal = index < 3 ? medals[index] : '';
+      const name = (entry.name || '익명').slice(0, 8);
+      fullRankingList.innerHTML += `<p><span class="rank">${medal} ${index + 1}위</span> <span>${name}</span> <span class="score">${entry.score}점</span></p>`;
     });
-}
-
-        function resetGame() {
-            if (game) game.resetGame();
-        }
-
-        async function showRankingModal(currentScore = null) {
-    console.log('Attempting to fetch rankings...');
-    const root = document.getElementById('modalRoot');
-    root.innerHTML = '';
-    const backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop';
-    const modal = document.createElement('div');
-    modal.className = 'modal ranking-modal';
-    modal.innerHTML = `
-        <h2>🏆 랭킹</h2>
-        <table class="ranking-table">
-            <thead>
-                <tr>
-                    <th>순위</th>
-                    <th>이름</th>
-                    <th>점수</th>
-                </tr>
-            </thead>
-            <tbody id="rankingTableBody">
-                <tr><td colspan="3" class="loading">랭킹을 불러오는 중...</td></tr>
-            </tbody>
-        </table>
-    `;
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-    const close = document.createElement('button');
-    close.className = 'btn btn-close';
-    close.textContent = '❌ 닫기';
-    close.onclick = () => {
-        root.innerHTML = '';
-    };
-    actions.appendChild(close);
-    modal.appendChild(actions);
-    backdrop.appendChild(modal);
-    root.appendChild(backdrop);
-    try {
-        console.log('Fetching scores from Firebase...');
-        const scoresRef = ref(db, 'scores');
-        const topScoresQuery = query(scoresRef, orderByChild('score'), limitToLast(10));
-        const snapshot = await get(topScoresQuery);
-        console.log('Snapshot received:', snapshot.exists());
-        const scores = [];
-        snapshot.forEach(child => {
-            const data = child.val();
-            if (typeof data.score === 'number' && typeof data.name === 'string' && typeof data.timestamp === 'number') {
-                scores.push({ name: data.name, score: Number(data.score), timestamp: data.timestamp });
-            }
-        });
-        scores.sort((a, b) => {
-            if (b.score === a.score) {
-                return b.timestamp - a.timestamp;
-            }
-            return b.score - a.score;
-        });
-        const rankingTableBody = document.getElementById('rankingTableBody');
-        rankingTableBody.innerHTML = '';
-        if (scores.length === 0) {
-            rankingTableBody.innerHTML = '<tr><td colspan="3">아직 랭킹 데이터가 없습니다.</td></tr>';
-            console.log('No ranking data found.');
-        } else {
-            scores.forEach((entry, index) => {
-                const row = document.createElement('tr');
-                const rank = index + 1;
-                const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}위`;
-                const isCurrentScore = currentScore !== null && entry.score === currentScore && entry.name === playerName;
-                const nameCell = document.createElement('td');
-                nameCell.textContent = entry.name || '익명';
-                const rankCell = document.createElement('td');
-                rankCell.textContent = rankEmoji;
-                const scoreCell = document.createElement('td');
-                scoreCell.textContent = entry.score.toLocaleString();
-                row.appendChild(rankCell);
-                row.appendChild(nameCell);
-                row.appendChild(scoreCell);
-                if (isCurrentScore) {
-                    row.className = 'current-score';
-                }
-                rankingTableBody.appendChild(row);
-            });
-            console.log(`Rankings loaded: ${scores.length} entries`);
-        }
-    } catch (error) {
-        console.error('Error fetching rankings:', error.message, error.code);
-        document.getElementById('rankingTableBody').innerHTML = '<tr><td colspan="3">랭킹을 불러올 수 없습니다. 네트워크 연결을 확인해주세요.</td></tr>';
+    if (rankings.length === 0) {
+      fullRankingList.innerHTML = '<p style="text-align: center; color: #94a3b8;">아직 기록이 없어요</p>';
     }
+  }, { onlyOnce: true });
+  fullRankingModal.classList.add('show');
 }
 
-        async function saveScore(name, score) {
-    try {
-        console.log(`Saving score: name=${name}, score=${score}`);
-        await push(ref(db, 'scores'), {
-            name: name || '익명',
-            score: Number(score),
-            timestamp: Date.now()
-        });
-        console.log('Score saved successfully');
-        await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-        console.error('Error saving score:', error.message, error.code);
+closeFullRankingBtn.addEventListener('click', () => {
+  fullRankingModal.classList.remove('show');
+});
+
+// 버튼 이벤트 추가
+document.querySelectorAll('.view-full-ranking').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const gameId = btn.getAttribute('data-game');
+    showFullRanking(gameId);
+  });
+});
+
+    ['game1', 'game2', 'game3', 'game4', 'game5'].forEach(loadRankings);
+
+    // 모달 관리
+    const modal = document.getElementById('name-modal');
+    const input = document.getElementById('player-name-input');
+    const saveBtn = document.getElementById('save-name-btn');
+    const cancelBtn = document.getElementById('cancel-name-btn');
+    const userInfo = document.getElementById('user-info');
+    const userNameDisplay = document.getElementById('user-name-display');
+    const changeNameBtn = document.getElementById('change-name-btn');
+
+    function showNameModal(isCancel = true) {
+      modal.classList.add('show');
+      input.value = window.playerName || '';
+      input.focus();
+      if (!isCancel) {
+        cancelBtn.style.display = 'none';
+      } else {
+        cancelBtn.style.display = 'block';
+      }
     }
-}
 
-        let playerName = '';
-function showNameModal(callback = null) {
-    console.log('Showing name modal for game start');
-    const modal = document.getElementById('nameModal');
-    const input = document.getElementById('playerNameInput');
-    const saveBtn = document.getElementById('saveNameBtn');
-    const cancelBtn = document.getElementById('cancelNameBtn');
-    modal.style.display = 'flex';
-    input.value = playerName || '';
+    function hideNameModal() {
+      modal.classList.remove('show');
+    }
+
+function saveName() {
+  const name = input.value.trim();
+  if (!name) {
+    alert('이름을 입력해주세요 😊');
     input.focus();
-    input.addEventListener('focus', () => {
-        input.style.borderColor = '#667eea';
-        input.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-        input.style.background = 'rgba(255,255,255,1)';
-    });
-    input.addEventListener('blur', () => {
-        input.style.borderColor = '#dee2e6';
-        input.style.boxShadow = 'none';
-        input.style.background = 'rgba(255,255,255,0.9)';
-    });
-    async function onSave() {
-        const name = input.value.trim();
-        if (!name) {
-            alert('이름을 입력하세요.');
-            input.focus();
-            return;
-        }
-        playerName = name;
-        modal.style.display = 'none';
-        saveBtn.removeEventListener('click', onSave);
-        cancelBtn.removeEventListener('click', onCancel);
-        if (callback) callback();
-    }
-    function onCancel() {
-        modal.style.display = 'none';
-        saveBtn.removeEventListener('click', onSave);
-        cancelBtn.removeEventListener('click', onCancel);
-        playerName = '익명';
-        if (callback) callback();
-    }
-    saveBtn.addEventListener('click', onSave);
-    cancelBtn.addEventListener('click', onCancel);
-    input.onkeydown = function(e) {
-        if (e.key === 'Enter') onSave();
-    };
+    return;
+  }
+  if (name.length > 4) {
+    alert('이름은 최대 4글자까지 입력 가능해요');
+    input.focus();
+    return;
+  }
+  window.playerName = name;
+  localStorage.setItem('playerName', name);
+  userNameDisplay.textContent = name;
+  userInfo.style.display = 'flex';
+  hideNameModal();
+  
+  // 이름 저장 후 모든 게임의 랭킹 새로고침
+  ['game1', 'game2', 'game3', 'game4', 'game5'].forEach(loadRankings);
 }
 
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+    function updateUserDisplay() {
+      const savedName = window.playerName;
+      if (savedName) {
+        userNameDisplay.textContent = savedName;
+        userInfo.style.display = 'flex';
+      }
+    }
 
-        // 이벤트 리스너 등록
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('intro').style.display = 'flex';
-            document.getElementById('gameContainer').style.display = 'none';
-            
-            // 버튼 이벤트 연결
-            document.getElementById('startGameBtn').addEventListener('click', startIntroGame);
-            document.getElementById('showRankingBtn').addEventListener('click', showRankingModal);
-            document.getElementById('resetGameBtn').addEventListener('click', resetGame);
-            
-            console.log('Game loaded at', new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }));
+    // 3D 도넛 회전 구현 - 스와이프 방향 수정
+    const carousel = document.getElementById('carousel');
+    const cards = document.querySelectorAll('.game-card');
+    let rotation = 0;
+    let radius = window.innerWidth >= 768 ? 220 : 150;
+    let isDragging = false;
+    let startX = 0;
+    let lastRotation = 0;
+
+    function updateCarousel() {
+      cards.forEach((card, index) => {
+        const baseAngle = parseFloat(card.dataset.angle);
+        const angle = baseAngle + rotation;
+        const x = radius * Math.cos((angle * Math.PI) / 180);
+        const z = radius * Math.sin((angle * Math.PI) / 180);
+        const normZ = (z / radius + 1) / 2;
+        const scale = 0.8 + 0.4 * normZ;
+        const opacity = 0.6 + 0.4 * normZ;
+        const grayscale = Math.max(0, 100 - normZ * 100);
+        gsap.to(card, {
+          x: x,
+          z: z,
+          scale: scale,
+          opacity: opacity,
+          filter: `grayscale(${grayscale}%)`,
+          rotationY: 0,
+          duration: 0.3,
+          ease: 'power2.out'
         });
-    </script>
+      });
+    }
+
+    // 마우스/터치 드래그로 회전
+    carousel.addEventListener('mousedown', startDrag);
+    carousel.addEventListener('touchstart', startDrag);
+
+    function startDrag(e) {
+      isDragging = true;
+      startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+      lastRotation = rotation;
+      carousel.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('touchmove', onDrag, { passive: false });
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchend', stopDrag);
+    }
+
+    function onDrag(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+      const deltaX = currentX - startX;
+      // 부호를 반대로 변경: 왼쪽 스와이프 시 오른쪽 카드가 중앙으로
+      rotation = lastRotation - (deltaX * 0.3);
+      updateCarousel();
+    }
+
+    function stopDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      carousel.style.cursor = 'grab';
+      const snappedRotation = Math.round(rotation / 72) * 72;
+      gsap.to({ value: rotation }, {
+        value: snappedRotation,
+        duration: 0.3,
+        ease: 'power2.out',
+        onUpdate: function() {
+          rotation = this.targets()[0].value;
+          updateCarousel();
+        }
+      });
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('touchmove', onDrag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchend', stopDrag);
+    }
+
+    carousel.style.cursor = 'grab';
+
+    // 이벤트 리스너
+    saveBtn.addEventListener('click', saveName);
+    cancelBtn.addEventListener('click', () => {
+      if (window.playerName) {
+        hideNameModal();
+      } else {
+        alert('게임을 시작하려면 이름을 입력해주세요 🎮');
+        input.focus();
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        saveName();
+      }
+    });
+
+    changeNameBtn.addEventListener('click', () => {
+      showNameModal(true);
+      input.value = window.playerName || '';
+    });
+
+    // iframe 내용 비우기 함수 추가 (스크립트 상단에)
+function resetIframe() {
+  const frame = document.getElementById('game-frame');
+  frame.src = 'about:blank';  // 이전 콘텐츠 초기화
+  frame.classList.remove('visible');
+  frame.style.display = 'none';
+}
+
+// 게임 버튼 이벤트 수정 (resetIframe 호출 추가)
+document.querySelectorAll('.game-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const gameId = btn.getAttribute('data-game');
+    if (!window.playerName) {
+      showNameModal(false);
+      return;
+    }
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+    resetIframe();  // iframe 초기화 호출
+    const frame = document.getElementById('game-frame');
+    frame.src = `${gameId}.html`;
+    frame.classList.add('visible');
+    frame.style.display = 'block';
+    document.querySelector('h1').style.display = 'none';
+    document.getElementById('carousel').style.display = 'none';
+    document.getElementById('user-info').style.display = 'none';
+    // playBGM(false); // 사용자 클릭 후 BGM 재생
+  });
+});
+
+    // 페이지 로드 시 초기화
+    window.addEventListener('load', () => {
+      createBackgroundEffects();
+      const savedName = localStorage.getItem('playerName');
+      if (savedName) {
+        window.playerName = savedName;
+        updateUserDisplay();
+      } else {
+        setTimeout(() => showNameModal(false), 500);
+      }
+      updateCarousel();
+    });
+
+    // 창 크기 변경 시 반지름 업데이트
+    window.addEventListener('resize', () => {
+      const newRadius = window.innerWidth >= 768 ? 220 : 150;
+      if (radius !== newRadius) {
+        radius = newRadius;
+        updateCarousel();
+        playBGM(false); // ⬅️ 이 줄 추가
+      }
+    });
+    
+    // BGM 관리 함수 수정
+    const bgm = document.getElementById('bgm');
+    bgm.volume = 0.3;
+    let bgmStarted = false; // BGM 시작 여부 추적
+
+    function playBGM(reset = false) {
+      if (reset) {
+        bgm.currentTime = 0;
+      }
+      
+      // 이미 재생 중이면 아무것도 하지 않음
+      if (!bgm.paused) {
+        return;
+      }
+      
+      if (localStorage.getItem('bgmEnabled') !== 'false') {
+        bgm.play().catch(err => console.warn('BGM play failed:', err));
+        bgmStarted = true;
+      }
+    }
+
+    // 사용자 인터랙션 시 BGM 재생 (자동재생 실패 대비)
+    document.body.addEventListener('click', function startBGMOnInteraction() {
+      if (!bgmStarted || bgm.paused) {
+        playBGM(false);
+      }
+    }, { once: true }); // 한 번만 실행
+
+    // visibilitychange: pause/resume (reset 없이)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        if (bgmStarted) {  // ⬅️ 조건 추가
+          playBGM(false);
+        }
+      } else {
+        bgm.pause();
+      }
+    });
+    // postMessage 리스너 추가 (goHome 메시지 처리)
+    window.addEventListener('message', (e) => {
+      if (e.data === 'goHome') {
+        resetIframe();
+        document.querySelector('h1').style.display = 'block';
+        document.getElementById('carousel').style.display = 'block';
+        document.getElementById('user-info').style.display = 'flex';
+        
+        // BGM이 일시정지 상태일 때만 재생 (중복 방지)
+        if (bgm.paused && bgmStarted) {
+          playBGM(false);
+        }
+      }
+    });
+
+
+    window.addEventListener('message', (e) => {
+      if (e.data === 'goHome') {
+        resetIframe();
+        document.querySelector('h1').style.display = 'block';
+        document.getElementById('carousel').style.display = 'block';
+        document.getElementById('user-info').style.display = 'flex';
+        
+        if (bgm.paused) {
+          playBGM(false);
+        }
+      }
+    });
+  </script>
+    <div id="full-ranking-modal" class="modal">
+  <div class="modal-content full-ranking-modal">
+    <h2 id="full-ranking-title">전체 랭킹</h2>
+    <div class="full-ranking-list" id="full-ranking-list"></div>
+    <button id="close-full-ranking" class="primary" style="margin-top: 15px; width: 100%;">닫기</button>
+  </div>
+</div>
+  <audio id="bgm" src="assets/bgm_background.mp3" loop style="display:none;"></audio>  <!-- autoplay 제거: 정책 준수 -->
+  <iframe id="game-frame" style="display:none; width:100%; height:100vh; border:none; position:fixed; top:0; left:0; z-index:9999;"></iframe>
 </body>
 </html>
