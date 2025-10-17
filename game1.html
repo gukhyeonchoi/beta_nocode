@@ -1707,18 +1707,18 @@
             if (game) game.resetGame();
         }
         function goHome() {
-  if (parent.resetIframe) {
-    parent.resetIframe(); // 부모의 iframe 초기화 호출
-  }
-  parent.document.querySelector('h1').style.display = 'block';
-  parent.document.getElementById('carousel').style.display = 'block';
-  parent.document.getElementById('user-info').style.display = 'flex';
-  if (parent.playBGM) {
-    parent.playBGM(false); // BGM 유지
-  }
   if ('vibrate' in navigator) {
-    navigator.vibrate(50);
+    navigator.vibrate(50);  // 진동 효과 유지
   }
+  
+  // iframe 내부에서 실행 중인지 확인
+  if (window.parent && window.parent !== window) {
+    // 부모 페이지(index.html)에 'goHome' 메시지 전송
+    window.parent.postMessage('goHome', '*');
+} else {
+  // iframe이 아닌 직접 실행 중일 때 (테스트 용도)
+  window.location.href = 'index.html';  // index 페이지로 이동
+}
 }
         document.addEventListener('DOMContentLoaded', function() {
             createBackgroundEffects();
