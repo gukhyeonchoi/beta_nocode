@@ -1423,64 +1423,79 @@
                 }
             }
             showGameOverModal(message, rankings) {
-                const root = document.getElementById('modalRoot');
-                root.innerHTML = '';
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop';
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `<h2>🎮 게임 오버</h2><p style="white-space: pre-line;">${message}</p>`;
-                const rankingDiv = document.createElement('div');
-                rankingDiv.style.margin = '20px 0';
-                rankingDiv.style.textAlign = 'left';
-                rankingDiv.style.fontSize = '14px';
-                rankingDiv.style.color = '#0284c7';
-                rankingDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 16px;">🏆 랭킹</h3>';
-                if (rankings.length === 0) {
-                    rankingDiv.innerHTML += '<p>랭킹 데이터 없음</p>';
-                } else {
-                    rankings.forEach((entry, index) => {
-                        rankingDiv.innerHTML += `<p><span style="font-weight: 600;">${index + 1}위</span> ${entry.name || '익명'} - ${entry.score}점</p>`;
-                    });
-                }
-                modal.appendChild(rankingDiv);
-                const actions = document.createElement('div');
-                actions.className = 'modal-actions';
-                                const retry = document.createElement('button');
-                retry.className = 'btn btn-retry';
-                retry.textContent = '🔄 재도전';
-                retry.style.width = '100%';
-                retry.style.minHeight = '44px';
-                retry.onclick = () => {
-                    root.innerHTML = '';
-                    this.resetGame();
-                };
-                const continueBtn = document.createElement('button');
-                continueBtn.className = 'btn btn-continue';
-                continueBtn.textContent = '📺 광고 보고 이어하기';
-                continueBtn.style.width = '100%';
-                continueBtn.style.minHeight = '44px';
-                continueBtn.onclick = () => {
-                    root.innerHTML = '';
-                    this.showAdModal();
-                };
-                const home = document.createElement('button');
-                home.className = 'btn btn-home';
-                home.textContent = '🏠 홈으로';
-                home.style.width = '100%';
-                home.style.minHeight = '44px';
-                home.onclick = () => {
-                    root.innerHTML = '';
-                    window.location.href = 'index.html';
-                };
-                actions.appendChild(retry);
-                actions.appendChild(continueBtn);
-                actions.appendChild(home);
-                modal.appendChild(actions);
-                backdrop.appendChild(modal);
-                root.appendChild(backdrop);
-                backdrop.classList.add('show');
-            }
+    const root = document.getElementById('modalRoot');
+    root.innerHTML = '';
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `<h2>🎮 게임 오버</h2><p style="white-space: pre-line;">${message}</p>`;
+    const rankingDiv = document.createElement('div');
+    rankingDiv.style.margin = '20px 0';
+    rankingDiv.style.textAlign = 'left';
+    rankingDiv.style.fontSize = '14px';
+    rankingDiv.style.color = '#0284c7';
+    rankingDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 16px;">🏆 랭킹</h3>';
+    if (rankings.length === 0) {
+        rankingDiv.innerHTML += '<p>랭킹 데이터 없음</p>';
+    } else {
+        rankings.forEach((entry, index) => {
+            rankingDiv.innerHTML += `<p><span style="font-weight: 600;">${index + 1}위</span> ${entry.name || '익명'} - ${entry.score}점</p>`;
+        });
+    }
+    modal.appendChild(rankingDiv);
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+    const retry = document.createElement('button');
+    retry.className = 'btn btn-retry';
+    retry.textContent = '🔄 재도전';
+    retry.style.width = '100%';
+    retry.style.minHeight = '44px';
+    retry.onclick = () => {
+        root.innerHTML = '';
+        this.resetGame();
+    };
+    const continueBtn = document.createElement('button');
+    continueBtn.className = 'btn btn-continue';
+    continueBtn.textContent = '📺 광고 보고 이어하기';
+    continueBtn.style.width = '100%';
+    continueBtn.style.minHeight = '44px';
+    continueBtn.onclick = () => {
+        root.innerHTML = '';
+        this.showAdModal();
+    };
+    const home = document.createElement('button');
+    home.className = 'btn btn-home';
+    home.textContent = '🏠 홈으로';
+    home.style.width = '100%';
+    home.style.minHeight = '44px';
+    home.onclick = () => {
+        root.innerHTML = '';
+        goHome();
+    };
+    actions.appendChild(retry);
+    actions.appendChild(continueBtn);
+    actions.appendChild(home);
+    modal.appendChild(actions);
+    backdrop.appendChild(modal);
+    root.appendChild(backdrop);
+    backdrop.classList.add('show');
+
+    // 수정: flag로 한 번만 저장
+    if (!this.scoreSaved) {
+        try {
+            const scoreData = {
+                name: playerName || '익명',
+                score: this.score,
+                timestamp: Date.now()
+            };
+            await database.ref('scores/game1').push(scoreData);
+            this.scoreSaved = true;  // 저장 완료 플래그
+        } catch (error) {
+            console.error('Error saving score:', error);
+        }
+    }
+}
             showAdModal() {
                 const root = document.getElementById('modalRoot');
                 root.innerHTML = '';
