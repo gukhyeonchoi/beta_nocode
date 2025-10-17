@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사과 게임</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 5px 10px;
+            font-family: 'Pretendard', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fce7f3 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease-in-out infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .sparkle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #93c5fd, transparent);
+            border-radius: 50%;
+            animation: sparkleAnim var(--duration) ease-in-out infinite;
+            opacity: 0;
+            box-shadow: 0 0 10px rgba(147, 197, 253, 0.8);
+            pointer-events: none;
+            z-index: 1999;
+        }
+        
+        @keyframes sparkleAnim {
+            0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.5) rotate(180deg); }
+        }
+
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 10px;
+        }
+
+        .welcome-content {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 30px; 
+            border-radius: 25px;
+            text-align: center;
+            max-width: 430px;  
+            width: 85%;  
+            box-shadow: 0 20px 60px rgba(14, 165, 233, 0.2);
+            animation: welcomeAppear 0.5s ease-out;
+            border: 3px solid rgba(147, 197, 253, 0.5);
+            z-index: 2001;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+}
+
+        .welcome-content > p {
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        @keyframes welcomeAppear {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .welcome-title {
+            font-size: 36px; 
+            color: #0284c7;
+            font-weight: 800;
+        }
+
+        .game-rules {
+            background: rgba(240, 249, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 16px; 
+            color: #64748b;  
+            line-height: 1.5;
+            border: 2px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .game-rules h3 {
+            margin: 0 0 10px 0;
+            color: #0284c7;
+            font-size: 16px;
+        }
+
+        .game-rules p {
+            margin: 0;
+            margin-bottom: 8px;
+        }
+
+        .game-rules p:last-child {
+            margin-bottom: 0;
+        }
+
+        .rule-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .rule-icon {
+            font-size: 1em;
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+
+        .start-button, .ranking-button {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: white;
+            border: none;
+            padding: 16px 32px;  
+            font-size: 18px; 
+            font-weight: 700;
+            border-radius: 18px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 15px; 
+            position: relative;
+            overflow: hidden;
+            width: auto; 
+        }
+
+        .start-button::before, .ranking-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+
+
+        .ranking-button {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            padding: 16px 32px; 
+            font-size: 18px; 
+            box-shadow: 0 8px 20px rgba(100, 116, 139, 0.3); 
+        }
+
+
+        .game-container {
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(14, 165, 233, 0.2);
+            max-width: 600px;
+            width: 90%;
+            max-height: 95vh; 
+            overflow-y: auto; 
+            border: 3px solid rgba(147, 197, 253, 0.5);
+            z-index: 2000;
+            position: relative;
+        }
+
+        h1 {
+            color: #0284c7;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .stage-info {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .stage-info.gravity {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+        }
+
+        .stage-info.infinite {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+        }
+
+        .timer-bar-container {
+            background: rgba(236, 240, 241, 0.8);
+            border-radius: 25px;
+            height: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .timer-bar {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            height: 100%;
+            transition: width 0.1s ease;
+            border-radius: 25px;
+        }
+
+        .timer-bar.warning {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .timer-bar.danger {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            animation: pulseTimer 0.5s infinite alternate;
+        }
+
+        @keyframes pulseTimer {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .timer-text {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #0284c7;
+            margin-bottom: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(240, 249, 255, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #0284c7;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 8px;
+            margin-bottom: 30px;
+            background: rgba(240, 249, 255, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            touch-action: none;
+            justify-items: center;
+            border: 2px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .tile {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            overflow: hidden;
+        }
+
+        .tile::before {
+            content: '🍎';
+            position: absolute;
+            font-size: 46px;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .tile .number {
+            position: relative;
+            z-index: 3;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(56, 189, 248, 0.5);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .tile:hover {
+            transform: translateY(-3px) scale(1.05);
+            filter: drop-shadow(0 6px 12px rgba(56, 189, 248, 0.4)) brightness(1.1);
+        }
+
+        .tile.selected {
+            transform: scale(1.1);
+            filter: drop-shadow(0 6px 12px rgba(56, 189, 248, 0.6)) saturate(1.3);
+        }
+
+        .tile.selected .number {
+            background: rgba(56, 189, 248, 0.7);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .empty-slot {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border-radius: 10px;
+        }
+
+        .drag-selection {
+            position: absolute;
+            background: rgba(56, 189, 248, 0.2);
+            border: 2px solid #38bdf8;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 18px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: white;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-reset {
+            background: linear-gradient(145deg, #60a5fa, #93c5fd);
+            color: white;
+        }
+
+        .btn-new {
+            background: linear-gradient(145deg, #60a5fa, #93c5fd);
+            color: white;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            color: white;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.1em;
+            min-height: 54px;
+            height: 54px;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.success {
+            background: rgba(220, 252, 231, 0.8);
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .message.error {
+            background: rgba(254, 226, 226, 0.8);
+            color: #f87171;
+            border: 2px solid #f87171;
+        }
+
+        .combo-effect {
+            animation: comboFlash 0.5s ease-in-out;
+        }
+
+        @keyframes comboFlash {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); background: rgba(186, 230, 253, 0.5); }
+        }
+
+        .tile-remove {
+            animation: tileDisappear 0.5s ease-in-out forwards;
+        }
+
+        @keyframes tileDisappear {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+
+        .tile.gravity-fall {
+            animation: gravityFall 0.8s ease-in-out;
+        }
+
+        @keyframes gravityFall {
+            0% { transform: translateY(-100px) scale(1); opacity: 0.8; }
+            50% { transform: translateY(0px) scale(1.05); opacity: 1; }
+            100% { transform: translateY(0px) scale(1); opacity: 1; }
+        }
+
+        .tile-spawn {
+            animation: tileSpawn 0.8s ease-out;
+        }
+
+        @keyframes tileSpawn {
+            0% { transform: translateY(-120px) scale(0.8); opacity: 0; }
+            50% { transform: translateY(-60px) scale(1.1); opacity: 0.8; }
+            100% { transform: translateY(0px) scale(1); opacity: 1; }
+        }
+
+        .time-bonus {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.5em;
+            font-weight: 700;
+            z-index: 1001;
+            animation: timeBonusShow 1s ease-out forwards;
+        }
+
+        @keyframes timeBonusShow {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(186, 230, 253, 0.3);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(14, 165, 233, 0.3);
+            animation: modalBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 3px solid rgba(147, 197, 253, 0.5);
+        }
+
+        @keyframes modalBounce {
+            0% {
+                transform: scale(0.5) translateY(50px);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.05) translateY(-10px);
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .popup-title {
+            font-size: 2em;
+            color: #0284c7;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .popup-score {
+            font-size: 1.5em;
+            color: #64748b;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* 태블릿 (768px 이하) */
+        @media (max-width: 768px) {
+            body { padding: 5 15px; }
+            .welcome-content { padding: 25px 20px; }
+            .welcome-title { font-size: 2.2em; }
+            .game-rules { font-size: 1em; padding: 15px; }
+            .game-container { padding: 15px; max-width: 100%; width: 80%; }
+            h1 { font-size: 2em; }
+            .game-board { 
+                grid-template-columns: repeat(6, 1fr);
+                padding: 15px;
+                gap: 6px;
+            }
+            .tile, .empty-slot { width: 45px; height: 45px; }
+            .tile::before { font-size: 40px; }
+            .tile .number { font-size: 1.5em; width: 28px; height: 28px; }
+        }
+
+        /* 작은 모바일 (480px 이하) */
+        @media (max-width: 480px) {
+            body { padding: 3px 10px; }
+            .welcome-content { 
+                padding: 15px 15px; 
+                width: 85%;
+            }
+            .welcome-title { font-size: 1.8em; }
+            .game-rules { 
+                font-size: 0.85em; 
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+            .rule-item { margin-bottom: 8px; }
+            .start-button { 
+                padding: 12px 25px; 
+                font-size: 1.1em; 
+            }
+            .ranking-button { 
+                padding: 10px 20px; 
+                font-size: 0.95em; 
+            }
+            .game-container { 
+                padding: 8px; 
+                border-radius: 15px;
+                width: 85%;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+            h1 { font-size: 1.4em; margin-bottom: 5px; }
+            .stage-info { 
+                font-size: 0.9em; 
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+            .timer-text { font-size: 0.9em; margin-bottom: 6px; }
+            .timer-bar-container { 
+                height: 14px;
+                margin-bottom: 10px;
+            }
+            .score-board { 
+                padding: 8px; 
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+            .score-label { font-size: 0.7em; }
+            .score-value { font-size: 1.3em; }
+            .game-board { 
+                grid-template-columns: repeat(6, 1fr);
+                padding: 10px;
+                gap: 4px;
+                margin-bottom: 10px;
+            }
+            .tile, .empty-slot { 
+                width: 38px; 
+                height: 38px; 
+            }
+            .tile::before { font-size: 32px; }
+            .tile .number { 
+                font-size: 1.25em; 
+                width: 24px; 
+                height: 24px; 
+            }
+            .controls {
+                gap: 6px;
+                margin-bottom: 5px; }
+            .btn { 
+                padding: 7px 12px; 
+                font-size: 0.8em; 
+            }
+            .message { 
+                font-size: 0.85em; 
+                margin-top: 8px;  /* 12px → 8px */
+                min-height: 45px;  /* 54px → 45px */
+                height: 45px;
+            }
+            .popup-content { 
+                padding: 20px 15px; 
+                width: 90%;
+            }
+            .popup-title { font-size: 1.4em; }
+            .popup-score { font-size: 1.1em; margin-bottom: 20px; }
+        }
+
+        /* 아주 작은 모바일 (360px 이하) */
+        @media (max-width: 360px) {
+            body { padding: 2px 8px; }
+            .game-container { padding: 6px; width: 90%; }
+            h1 { font-size: 1.2em; margin-bottom: 4px; }
+            .stage-info { font-size: 0.85em; padding: 6px; margin-bottom: 8px; }
+            .timer-text { font-size: 0.85em; margin-bottom: 5px; }
+            .timer-bar-container { height: 12px; margin-bottom: 8px; }
+            .score-board { padding: 6px; gap: 4px; margin-bottom: 10px; }
+            .score-label { font-size: 0.65em; }
+            .score-value { font-size: 1.1em; }
+            .game-board { 
+                grid-template-columns: repeat(6, 1fr);
+                gap: 3px;
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+            .tile, .empty-slot { 
+                width: 34px; 
+                height: 34px; 
+            }
+            .tile::before { font-size: 28px; }
+            .tile .number { 
+                font-size: 1em; 
+                width: 20px; 
+                height: 20px; 
+            }
+            .controls {         
+                gap: 5px;  
+                margin-bottom: 5px; }
+
+            .btn { 
+                padding: 6px 10px; 
+                font-size: 0.75em; 
+            }
+            .message { 
+                font-size: 0.8em; 
+                padding: 6px;  /* 8px → 6px */
+                margin-top: 6px;  /* 10px → 6px */
+                min-height: 40px;  /* 추가 */
+                height: 40px;
+            }
+            .welcome-title { font-size: 1.4em; }
+            .welcome-content { padding: 12px 10px; width: 90%; }
+            .game-rules { font-size: 0.8em; padding: 10px; margin-bottom: 12px; }
+            .rule-item { margin-bottom: 6px; }
+            .start-button { padding: 10px 20px; font-size: 1em; }
+            .ranking-button { padding: 8px 16px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-title">🍎 사과 게임</div>
+            <p>드래그로 사과를 모아 10을 만드세요!</p>  
+
+            <div class="game-rules">
+            <h3>📖 게임 방법</h3>
+            <p>• 일반 모드→중력 모드→ 무한 모드순 진행</p>
+            <p>• 제한 시간 30초 (무한 모드는 30초 + 연장)</p>
+            <p>• 연속 성공 시 점수 배수 증가</p>
+            <p>• 무한 모드 클리어 시 랭킹에 등록돼요!</p>
+            </div>
+
+            <p id="playerNameDisplay" style="margin-top: 0; margin-bottom: 20px; color: #0284c7; font-weight: 700; font-size: 1.1em;">👤 플레이어: Guest</p>
+
+            <button class="start-button" id="startButton">🚀 게임 시작</button>
+            <button class="ranking-button" id="homeButton">🏠 홈으로</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <h1>🍎 사과 게임</h1>
+        
+        <div class="stage-info" id="stageInfo">스테이지 1 - 일반 모드</div>
+        
+        <div class="timer-text" id="timerText">남은 시간: 30초</div>
+        <div class="timer-bar-container">
+            <div class="timer-bar" id="timerBar" style="width: 100%;"></div>
+        </div>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">누적 점수</div>
+                <div class="score-value" id="totalScore">0</div>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <div class="controls">
+            <button class="btn btn-next" id="nextStageBtn" style="display: none;">다음 스테이지</button>
+            <button class="btn btn-reset" id="resetStageBtn">스테이지 재시작</button>
+            <button class="btn btn-new" id="newGameBtn">게임 재시작</button>
+            <button class="btn btn-main" id="mainBtn">나가기</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC-M1czGNwh3-xMLHgmEdVmfbHZAmQioiQ",
+  authDomain: "gukhyeon-ce3ba.firebaseapp.com",
+  databaseURL: "https://gukhyeon-ce3ba-default-rtdb.firebaseio.com",
+  projectId: "gukhyeon-ce3ba",
+  storageBucket: "gukhyeon-ce3ba.firebasestorage.app",
+  messagingSenderId: "751956972723",
+  appId: "1:751956972723:web:cedb2e5f483529732e8cc6",
+  measurementId: "G-JBBLJNDGY1"
+};
+
+let playerName = localStorage.getItem('playerName') || 'Guest';
+
+function createBackgroundEffects() {
+    for (let i = 0; i < 30; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = Math.random() * 100 + '%';
+        sparkle.style.top = Math.random() * 100 + '%';
+        sparkle.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        sparkle.style.animationDelay = Math.random() * 3 + 's';
+        document.body.appendChild(sparkle);
+    }
+}
+
+let database = null;
+let gameInstance = null;
+
+(function initFirebase() {
+    if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('✅ Firebase 초기화 성공');
+        } catch (error) {
+            console.error('❌ Firebase 초기화 실패:', error);
+        }
+    }
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+    createBackgroundEffects();
+    
+    const playerNameDisplay = document.getElementById('playerNameDisplay');
+    if (playerNameDisplay) {
+        playerNameDisplay.textContent = '👤 플레이어: ' + playerName;
+    }
+    
+    document.getElementById('startButton').addEventListener('click', startGame);
+    document.getElementById('homeButton').addEventListener('click', function() {
+        window.location.href = 'index.html';
+    });
+});
+
+function startGame() {
+    document.getElementById('welcomeScreen').style.display = 'none';
+    document.getElementById('gameContainer').style.display = 'block';
+    gameInstance = new AppleNumberGame();
+}
+
+class AppleNumberGame {
+    constructor() {
+        this.currentStage = 1;
+        this.totalScore = 0;
+        this.stageScores = {};
+        this.currentStageScore = 0;
+        this.board = [];
+        this.selectedTiles = [];
+        this.combo = 0;
+        this.isDragging = false;
+        this.dragStart = { x: 0, y: 0 };
+        this.dragSelection = null;
+        this.timeLeft = 30;
+        this.timerInterval = null;
+        this.stageActive = false;
+        this.isInfiniteMode = false;
+        this.infiniteScore = 0;
+        this.lastSelectedTiles = [];
+        
+        this.stageConfig = {
+            1: { rows: 6, cols: 6, gravity: false, name: "일반 모드" },
+            2: { rows: 6, cols: 6, gravity: true, name: "중력 모드" },
+            3: { rows: 6, cols: 6, gravity: true, name: "무한 모드", isInfinite: true }
+        };
+        
+        this.init();
+    }
+
+    init() {
+        this.initElements();
+        this.bindEvents();
+        this.startStage(1);
+    }
+
+    vibrate(pattern) {
+        // Vibration API 지원 여부 확인
+        if ('vibrate' in navigator) {
+            navigator.vibrate(pattern);
+        }
+    }
+
+
+    initElements() {
+        this.gameBoard = document.getElementById('gameBoard');
+        this.stageInfo = document.getElementById('stageInfo');
+        this.timerText = document.getElementById('timerText');
+        this.timerBar = document.getElementById('timerBar');
+        this.totalScoreEl = document.getElementById('totalScore');
+        this.messageEl = document.getElementById('message');
+        this.nextStageBtn = document.getElementById('nextStageBtn');
+        this.resetStageBtn = document.getElementById('resetStageBtn');
+        this.newGameBtn = document.getElementById('newGameBtn');
+        this.mainBtn = document.getElementById('mainBtn');
+    }
+
+    bindEvents() {
+        const self = this;
+        this.nextStageBtn.addEventListener('click', function() { self.nextStage(); });
+        this.resetStageBtn.addEventListener('click', function() { self.resetStage(); });
+        this.newGameBtn.addEventListener('click', function() { self.newGame(); });
+        this.mainBtn.addEventListener('click', function() { self.goToMain(); });
+
+        this.gameBoard.addEventListener('mousedown', function(e) { self.startDrag(e); });
+        document.addEventListener('mousemove', function(e) { self.moveDrag(e); });
+        document.addEventListener('mouseup', function(e) { self.endDrag(e); });
+        
+        this.gameBoard.addEventListener('touchstart', function(e) {
+            self.startDrag(e.touches[0]);
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', function(e) {
+            if(self.isDragging) { 
+                e.preventDefault(); 
+                self.moveDrag(e.touches[0]); 
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchend', function(e) {
+            self.endDrag(e.changedTouches[0]);
+        });
+    }
+
+    startDrag(e) {
+        if (!this.stageActive) return;
+        this.isDragging = true;
+        const rect = this.gameBoard.getBoundingClientRect();
+        this.dragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        
+        if (this.dragSelection) this.dragSelection.remove();
+        
+        this.dragSelection = document.createElement('div');
+        this.dragSelection.className = 'drag-selection';
+        this.dragSelection.style.left = this.dragStart.x + 'px';
+        this.dragSelection.style.top = this.dragStart.y + 'px';
+        this.dragSelection.style.width = '1px';
+        this.dragSelection.style.height = '1px';
+        this.gameBoard.appendChild(this.dragSelection);
+        
+        e.preventDefault();
+    }
+
+    moveDrag(e) {
+        if (!this.isDragging || !this.dragSelection) return;
+        
+        const rect = this.gameBoard.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        const left = Math.min(this.dragStart.x, currentX);
+        const top = Math.min(this.dragStart.y, currentY);
+        const width = Math.abs(currentX - this.dragStart.x);
+        const height = Math.abs(currentY - this.dragStart.y);
+        
+        this.dragSelection.style.left = left + 'px';
+        this.dragSelection.style.top = top + 'px';
+        this.dragSelection.style.width = width + 'px';
+        this.dragSelection.style.height = height + 'px';
+        
+        this.highlightTiles(left, top, width, height);
+    }
+
+    endDrag(e) {
+        const self = this;
+        if (!this.isDragging) return;
+        this.isDragging = false;
+
+        this.lastSelectedTiles = [];
+        
+        if (this.dragSelection) {
+            const rect = this.dragSelection.getBoundingClientRect();
+            const boardRect = this.gameBoard.getBoundingClientRect();
+            
+            const left = rect.left - boardRect.left;
+            const top = rect.top - boardRect.top;
+            const width = rect.width;
+            const height = rect.height;
+            
+            if (width > 5 || height > 5) {
+                const selected = this.getSelectedTiles(left, top, width, height);
+                if (selected.length > 0) {
+                    const sum = selected.reduce(function(total, id) {
+                        const tile = self.board.find(function(t) { return t.id === id; });
+                        return total + (tile ? tile.value : 0);
+                    }, 0);
+                    
+                    if (sum === 10) {
+                        this.removeTiles(selected);
+                        this.combo++;
+                        const points = selected.length * 100 * this.combo;
+
+                        this.vibrate(50);
+                        
+                        if (this.isInfiniteMode) {
+                            this.infiniteScore += points;
+                            this.timeLeft += 2;
+                            this.showTimeBonus('+2초');
+                        } else {
+                            this.currentStageScore += points;
+                        }
+                        
+                        this.showMessage('성공! +' + points + '점 (' + selected.length + '개 타일, 콤보 x' + this.combo + ')', 'success');
+                        this.updateDisplay();
+                        this.gameBoard.classList.add('combo-effect');
+                        setTimeout(function() { self.gameBoard.classList.remove('combo-effect'); }, 500);
+                    } else {
+                        this.combo = 0;
+                        this.showMessage('합이 ' + sum + '입니다. 10이 되는 조합을 선택해주세요!', 'error');
+                    }
+                }
+            }
+            
+            this.dragSelection.remove();
+            this.dragSelection = null;
+        }
+        this.updateSelectionDisplay();
+    }
+
+    highlightTiles(left, top, width, height) {
+        const self = this;
+        const tiles = this.gameBoard.querySelectorAll('.tile');
+        const currentSelected = [];
+        
+        tiles.forEach(function(tile) {
+            const tileRect = tile.getBoundingClientRect();
+            const boardRect = self.gameBoard.getBoundingClientRect();
+            const tileLeft = tileRect.left - boardRect.left;
+            const tileTop = tileRect.top - boardRect.top;
+            const tileRight = tileLeft + tileRect.width;
+            const tileBottom = tileTop + tileRect.height;
+            const selectionRight = left + width;
+            const selectionBottom = top + height;
+            
+            const isOverlapping = !(tileRight < left || tileLeft > selectionRight || tileBottom < top || tileTop > selectionBottom);
+            
+            if (isOverlapping) {
+                const tileId = parseInt(tile.dataset.id);
+                currentSelected.push(tileId);
+                tile.classList.add('selected');
+            } else if (!self.selectedTiles.includes(parseInt(tile.dataset.id))) {
+                tile.classList.remove('selected');
+            }
+        });
+        
+        // 새로운 타일이 추가되었는지 확인
+        const newTiles = currentSelected.filter(function(id) {
+            return !self.lastSelectedTiles.includes(id);
+        });
+        
+        // 새로운 타일이 선택되면 작은 진동
+        if (newTiles.length > 0) {
+            self.vibrate(15);
+        }
+        
+        // 현재 선택된 타일 목록 저장
+        self.lastSelectedTiles = currentSelected.slice();
+    }
+
+    getSelectedTiles(left, top, width, height) {
+        const self = this;
+        const tiles = this.gameBoard.querySelectorAll('.tile');
+        const selected = [];
+        
+        tiles.forEach(function(tile) {
+            const tileRect = tile.getBoundingClientRect();
+            const boardRect = self.gameBoard.getBoundingClientRect();
+            const tileLeft = tileRect.left - boardRect.left;
+            const tileTop = tileRect.top - boardRect.top;
+            const tileRight = tileLeft + tileRect.width;
+            const tileBottom = tileTop + tileRect.height;
+            const selectionRight = left + width;
+            const selectionBottom = top + height;
+            
+            const isOverlapping = !(tileRight < left || tileLeft > selectionRight || tileBottom < top || tileTop > selectionBottom);
+            
+            if (isOverlapping) {
+                const tileId = parseInt(tile.dataset.id);
+                if (!self.selectedTiles.includes(tileId)) {
+                    selected.push(tileId);
+                }
+            }
+        });
+        
+        return selected;
+    }
+
+    removeTiles(tilesToRemove) {
+        const self = this;
+        tilesToRemove.forEach(function(id) {
+            const tile = self.board.find(function(t) { return t.id === id; });
+            if (tile) {
+                tile.active = false;
+                const el = document.querySelector('[data-id="' + id + '"]');
+                if (el) el.classList.add('tile-remove');
+            }
+        });
+        
+        setTimeout(function() {
+            if (self.hasGravity) self.applyGravity();
+            self.renderBoard();
+        }, 500);
+    }
+
+    applyGravity() {
+        const self = this;
+        for (let col = 0; col < this.boardSize.cols; col++) {
+            const column = [];
+            
+            for (let row = this.boardSize.rows - 1; row >= 0; row--) {
+                const index = row * this.boardSize.cols + col;
+                const tile = this.board[index];
+                if (tile && tile.active) {
+                    column.push({ 
+                        value: tile.value, 
+                        originalRow: row 
+                    });
+                }
+            }
+            
+            for (let row = 0; row < this.boardSize.rows; row++) {
+                const index = row * this.boardSize.cols + col;
+                this.board[index] = { id: index, value: 0, active: false };
+            }
+            
+            if (this.isInfiniteMode) {
+                const emptySpaces = this.boardSize.rows - column.length;
+                for (let i = 0; i < emptySpaces; i++) {
+                    column.push({ 
+                        value: Math.floor(Math.random() * 9) + 1, 
+                        originalRow: -1,
+                        isNew: true 
+                    });
+                }
+            }
+            
+            for (let i = 0; i < column.length; i++) {
+                const newRow = this.boardSize.rows - 1 - i;
+                const newIndex = newRow * this.boardSize.cols + col;
+                
+                this.board[newIndex] = {
+                    id: newIndex,
+                    value: column[i].value,
+                    active: true,
+                    justFell: column[i].originalRow !== newRow || column[i].isNew,
+                    isNewTile: column[i].isNew
+                };
+            }
+        }
+    }
+
+    newGame() {
+        this.currentStage = 1;
+        this.totalScore = 0;
+        this.stageScores = {};
+        this.currentStageScore = 0;
+        this.infiniteScore = 0;
+        this.isInfiniteMode = false;
+        this.startStage(1);
+        this.showMessage('새 게임이 시작되었습니다!', 'success');
+    }
+
+    goToMain() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        this.stageActive = false;
+        document.getElementById('gameContainer').style.display = 'none';
+        document.getElementById('welcomeScreen').style.display = 'flex';
+        gameInstance = null;
+    }
+
+    nextStage() {
+        if (this.currentStage < 3) {
+            this.currentStage++;
+            this.startStage(this.currentStage);
+        }
+    }
+
+    resetStage() {
+        this.startStage(this.currentStage);
+        const msg = this.isInfiniteMode ? '무한 모드를 재시작했습니다.' : '스테이지를 재시작했습니다.';
+        this.showMessage(msg, 'success');
+    }
+
+    startStage(stage) {
+        const self = this;
+        this.currentStage = stage;
+        this.selectedTiles = [];
+        this.combo = 0;
+        this.stageActive = true;
+        
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        
+        const config = this.stageConfig[stage];
+        this.boardSize = { rows: config.rows, cols: config.cols };
+        this.hasGravity = config.gravity;
+        this.isInfiniteMode = config.isInfinite || false;
+        
+        if (this.isInfiniteMode) {
+            this.timeLeft = 30;
+            this.infiniteScore = 0;
+        } else {
+            this.timeLeft = 30;
+            this.currentStageScore = 0;
+        }
+        
+        this.stageInfo.textContent = '스테이지 ' + stage + ' - ' + config.name;
+        this.stageInfo.className = this.isInfiniteMode ? 'stage-info infinite' : (config.gravity ? 'stage-info gravity' : 'stage-info');
+        
+        this.generateBoard();
+        this.updateDisplay();
+        this.nextStageBtn.style.display = 'none';
+        
+        const msg = this.isInfiniteMode ? '스테이지 3 - 무한 모드! 타일 제거 시 +2초!' : '게임이 시작되었습니다!';
+        this.showMessage(msg, 'success');
+        
+        this.startTimer();
+    }
+
+    generateBoard() {
+        this.board = [];
+        const total = this.boardSize.rows * this.boardSize.cols;
+        for (let i = 0; i < total; i++) {
+            this.board.push({ id: i, value: Math.floor(Math.random() * 9) + 1, active: true });
+        }
+        this.renderBoard();
+    }
+
+    renderBoard() {
+        const self = this;
+        this.gameBoard.innerHTML = '';
+        this.gameBoard.style.gridTemplateColumns = 'repeat(' + this.boardSize.cols + ', 1fr)';
+        
+        for (let i = 0; i < this.boardSize.rows * this.boardSize.cols; i++) {
+            const tile = this.board[i];
+            
+            if (tile && tile.active) {
+                const el = document.createElement('div');
+                el.className = 'tile';
+                el.innerHTML = '<span class="number">' + tile.value + '</span>';
+                el.dataset.id = tile.id;
+                
+                if (tile.justFell && this.hasGravity) {
+                    el.classList.add(tile.isNewTile ? 'tile-spawn' : 'gravity-fall');
+                    tile.justFell = false;
+                    tile.isNewTile = false;
+                    setTimeout(function() { el.classList.remove('gravity-fall', 'tile-spawn'); }, 800);
+                }
+                
+                el.addEventListener('click', function() { self.toggleTile(tile.id); });
+                this.gameBoard.appendChild(el);
+            } else {
+                const empty = document.createElement('div');
+                empty.className = 'empty-slot';
+                this.gameBoard.appendChild(empty);
+            }
+        }
+    }
+
+    toggleTile(id) {
+        const index = this.selectedTiles.indexOf(id);
+        if (index > -1) {
+            this.selectedTiles.splice(index, 1);
+        } else {
+            this.selectedTiles.push(id);
+        }
+        this.updateSelectionDisplay();
+    }
+
+    updateSelectionDisplay() {
+        const self = this;
+        document.querySelectorAll('.tile').forEach(function(tile) {
+            const id = parseInt(tile.dataset.id);
+            tile.classList.toggle('selected', self.selectedTiles.includes(id));
+        });
+    }
+
+    startTimer() {
+        const self = this;
+        this.updateTimer();
+        this.timerInterval = setInterval(function() {
+            self.timeLeft--;
+            self.updateTimer();
+            if (self.timeLeft <= 0) self.endStage();
+        }, 1000);
+    }
+
+    updateTimer() {
+        this.timerText.textContent = '남은 시간: ' + this.timeLeft + '초';
+        const maxTime = this.isInfiniteMode ? Math.max(60, this.timeLeft + 60) : 30;
+        const percentage = Math.min(100, (this.timeLeft / maxTime) * 100);
+        this.timerBar.style.width = percentage + '%';
+        
+        this.timerBar.className = 'timer-bar';
+        if (this.timeLeft <= 5) this.timerBar.classList.add('danger');
+        else if (this.timeLeft <= 10) this.timerBar.classList.add('warning');
+    }
+
+    showTimeBonus(text) {
+        const bonus = document.createElement('div');
+        bonus.className = 'time-bonus';
+        bonus.textContent = text;
+        document.body.appendChild(bonus);
+        setTimeout(function() { bonus.remove(); }, 1000);
+    }
+
+    endStage() {
+        this.stageActive = false;
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+        
+        if (this.isInfiniteMode) {
+            this.showInfinitePopup(this.infiniteScore);
+        } else {
+            const prevBest = this.stageScores[this.currentStage] || 0;
+            if (this.currentStageScore > prevBest) {
+                this.stageScores[this.currentStage] = this.currentStageScore;
+                this.calculateTotalScore();
+            }
+            this.showStagePopup(this.currentStageScore);
+        }
+    }
+
+    calculateTotalScore() {
+        const self = this;
+        this.totalScore = Object.values(this.stageScores).reduce(function(sum, score) { return sum + score; }, 0);
+    }
+
+    showStagePopup(score) {
+        const isLastStage = this.currentStage === 2;
+        
+        let scoreText = '이번 점수: ' + score.toLocaleString() + '점';
+        scoreText += '<br>누적 총점: ' + this.totalScore.toLocaleString() + '점';
+        
+        if (isLastStage) {
+            scoreText += '<br><br>🌟 무한 모드 진입!';
+        }
+        
+        const popup = document.createElement('div');
+        popup.className = 'modal-backdrop';
+        popup.innerHTML = '<div class="popup-content"><div class="popup-title">스테이지 ' + this.currentStage + ' 완료!</div><div class="popup-score">' + scoreText + '</div><div class="popup-buttons"><button class="btn btn-next" onclick="this.closest(\'.modal-backdrop\').remove(); gameInstance.nextStage();">다음 스테이지</button><button class="btn btn-reset" onclick="this.closest(\'.modal-backdrop\').remove(); gameInstance.resetStage();">다시 도전</button></div></div>';
+        document.body.appendChild(popup);
+    }
+
+    showInfinitePopup(score) {
+        const self = this;
+        this.stageActive = false;
+    
+        const previousStagesScore = Object.entries(this.stageScores).filter(function(entry) {
+            return parseInt(entry[0]) < self.currentStage;
+        }).reduce(function(sum, entry) {
+            return sum + entry[1];
+        }, 0);
+        
+        const totalScore = previousStagesScore + score;
+
+        if (database) {
+            const scoreData = {
+                name: playerName || '익명',
+                score: totalScore,
+                timestamp: Date.now()
+            };
+            
+            database.ref('scores/game5').push(scoreData).then(function() {
+                console.log("✅ 랭킹 저장 완료!");
+                self.showFinalPopup(totalScore, true);
+            }).catch(function(error) {
+                console.error("❌ 랭킹 저장 실패:", error);
+                self.showFinalPopup(totalScore, false);
+            });
+        } else {
+            console.error('Firebase database not initialized!');
+            this.showFinalPopup(totalScore, false);
+        }
+    }
+
+    showFinalPopup(totalScore, savedSuccessfully) {
+        const saveMessage = savedSuccessfully ? '🎉 랭킹 등록 완료!' : '⚠️ 랭킹 등록 실패';
+        
+        const popup = document.createElement('div');
+        popup.className = 'modal-backdrop';
+        popup.innerHTML = '<div class="popup-content"><div class="popup-title">🌟 스테이지 3 완료!</div><div class="popup-score">전체 누적 점수: ' + totalScore.toLocaleString() + '점<br>최대 콤보: x' + this.combo + '<br><br>🎉 모든 스테이지 완주!<br>' + saveMessage + '</div><div class="popup-buttons"><button class="btn btn-reset" onclick="this.closest(\'.modal-backdrop\').remove(); gameInstance.goToMain();">나가기</button><button class="btn btn-new" onclick="this.closest(\'.modal-backdrop\').remove(); gameInstance.newGame();">새 게임</button></div></div>';
+        document.body.appendChild(popup);
+    }
+
+    updateDisplay() {
+        let displayScore;
+        const self = this;
+        
+        const previousStagesScore = Object.entries(this.stageScores).filter(function(entry) {
+            return parseInt(entry[0]) < self.currentStage;
+        }).reduce(function(sum, entry) {
+            return sum + entry[1];
+        }, 0);
+        
+        if (this.isInfiniteMode) {
+            displayScore = previousStagesScore + this.infiniteScore;
+        } else {
+            displayScore = previousStagesScore + this.currentStageScore;
+        }
+        
+        this.totalScoreEl.textContent = displayScore.toLocaleString();
+    }
+
+    showMessage(text, type) {
+        const self = this;
+        this.messageEl.textContent = text;
+        this.messageEl.className = 'message ' + type;
+        
+        if (text && type !== 'stage-complete') {
+            setTimeout(function() {
+                if (!self.messageEl.textContent.includes('클리어')) {
+                    self.messageEl.textContent = '';
+                    self.messageEl.className = 'message';
+                }
+            }, 3000);
+        }
+    }
+}
+</script>
+</body>
+</html>
