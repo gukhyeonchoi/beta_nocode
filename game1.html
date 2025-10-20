@@ -1194,6 +1194,8 @@
         return;
     }
     
+    let needsUpdate = false;
+    
     // 한 프레임에 여러 발을 쏠 수 있도록 while 루프 추가
     while (now - lastShotTime >= shotInterval && queued.number > 0 && currentBottom.number > 0) {
         if (this._particleCount < this._maxParticles) {
@@ -1204,15 +1206,14 @@
         queued.number -= 1;
         shotsFired++;
         this.score += 1;
-        lastShotTime += shotInterval; // now가 아닌 shotInterval을 더해서 정확한 간격 유지
+        lastShotTime += shotInterval;
+        needsUpdate = true;
         
         if (currentBottom.number <= 0) {
             this.targetLanes[laneIndex].shift();
             if (lane.length > 0 && lane[0].color === queued.color) {
-                // 다음 블록으로 전환
                 break;
             } else {
-                // 더 이상 매칭되는 블록이 없음
                 break;
             }
         }
@@ -1223,10 +1224,26 @@
         navigator.vibrate(30);
     }
     
-    this.updateDisplay();
-    this.updateTargetLanes();
-    this.updateQueue();
+    // 변경사항이 있을 때만 UI 업데이트
+    if (needsUpdate) {
+        this.updateDisplay();
+        this.updateTargetLanes();
+        this.updateQueue();
+    }
     
+    // 진동은 프레임당 한 번만
+    if (shotsFired > 0 && 'vibrate' in navigator) {
+        navigator.vibrate(30);
+    }
+    
+    // 변경사항이 있을 때만 UI 업데이트
+    if (needsUpdate) {
+        this.updateDisplay();
+        this.updateTargetLanes();
+        this.updateQueue();
+    }
+    
+    // 계속 발사할지 확인
     if (queued.number > 0 && lane.length > 0 && lane[0].color === queued.color) {
         requestAnimationFrame(fireLoop);
     } else {
@@ -1291,15 +1308,14 @@
                     return 1 - Math.pow(1 - t, 3);
                 }
                 const frame = (now) => {
-                    const t = Math.min(1, (now - start) / duration);
-                    const eased = easeOutCubic(t);
-                    const curX = startX + (targetX - startX) * eased + (Math.random() - 0.5) * 2;
-                    const curY = startY + (targetY - startY) * eased + (Math.random() - 0.5) * 2;
-                    p.style.left = curX + 'px';
-                    p.style.top = curY + 'px';
-                    p.style.opacity = String(1 - eased * 0.3);
-                    const scale = 1 - 0.4 * eased;
-                    p.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    const t = Math.min(1, (now - start) / duration);
+    const eased = easeOutCubic(t);
+    const curX = startX + (targetX - startX) * eased;
+    const curY = startY + (targetY - startY) * eased;
+    const scale = 1 - 0.4 * eased;
+    // transform을 한 번에 적용하여 리플로우 최소화
+    p.style.transform = `translate(${curX - startX}px, ${curY - startY}px) translate(-50%,-50%) scale(${scale})`;
+    p.style.opacity = String(1 - eased * 0.3);
                     if (t < 1) {
                         requestAnimationFrame(frame);
                     } else {
@@ -1423,79 +1439,64 @@
                 }
             }
             showGameOverModal(message, rankings) {
-    const root = document.getElementById('modalRoot');
-    root.innerHTML = '';
-    const backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop';
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.innerHTML = `<h2>🎮 게임 오버</h2><p style="white-space: pre-line;">${message}</p>`;
-    const rankingDiv = document.createElement('div');
-    rankingDiv.style.margin = '20px 0';
-    rankingDiv.style.textAlign = 'left';
-    rankingDiv.style.fontSize = '14px';
-    rankingDiv.style.color = '#0284c7';
-    rankingDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 16px;">🏆 랭킹</h3>';
-    if (rankings.length === 0) {
-        rankingDiv.innerHTML += '<p>랭킹 데이터 없음</p>';
-    } else {
-        rankings.forEach((entry, index) => {
-            rankingDiv.innerHTML += `<p><span style="font-weight: 600;">${index + 1}위</span> ${entry.name || '익명'} - ${entry.score}점</p>`;
-        });
-    }
-    modal.appendChild(rankingDiv);
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-    const retry = document.createElement('button');
-    retry.className = 'btn btn-retry';
-    retry.textContent = '🔄 재도전';
-    retry.style.width = '100%';
-    retry.style.minHeight = '44px';
-    retry.onclick = () => {
-        root.innerHTML = '';
-        this.resetGame();
-    };
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn btn-continue';
-    continueBtn.textContent = '📺 광고 보고 이어하기';
-    continueBtn.style.width = '100%';
-    continueBtn.style.minHeight = '44px';
-    continueBtn.onclick = () => {
-        root.innerHTML = '';
-        this.showAdModal();
-    };
-    const home = document.createElement('button');
-    home.className = 'btn btn-home';
-    home.textContent = '🏠 홈으로';
-    home.style.width = '100%';
-    home.style.minHeight = '44px';
-    home.onclick = () => {
-        root.innerHTML = '';
-        goHome();
-    };
-    actions.appendChild(retry);
-    actions.appendChild(continueBtn);
-    actions.appendChild(home);
-    modal.appendChild(actions);
-    backdrop.appendChild(modal);
-    root.appendChild(backdrop);
-    backdrop.classList.add('show');
-
-    // 수정: flag로 한 번만 저장
-    if (!this.scoreSaved) {
-        try {
-            const scoreData = {
-                name: playerName || '익명',
-                score: this.score,
-                timestamp: Date.now()
-            };
-            await database.ref('scores/game1').push(scoreData);
-            this.scoreSaved = true;  // 저장 완료 플래그
-        } catch (error) {
-            console.error('Error saving score:', error);
-        }
-    }
-}
+                const root = document.getElementById('modalRoot');
+                root.innerHTML = '';
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop';
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `<h2>🎮 게임 오버</h2><p style="white-space: pre-line;">${message}</p>`;
+                const rankingDiv = document.createElement('div');
+                rankingDiv.style.margin = '20px 0';
+                rankingDiv.style.textAlign = 'left';
+                rankingDiv.style.fontSize = '14px';
+                rankingDiv.style.color = '#0284c7';
+                rankingDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 16px;">🏆 랭킹</h3>';
+                if (rankings.length === 0) {
+                    rankingDiv.innerHTML += '<p>랭킹 데이터 없음</p>';
+                } else {
+                    rankings.forEach((entry, index) => {
+                        rankingDiv.innerHTML += `<p><span style="font-weight: 600;">${index + 1}위</span> ${entry.name || '익명'} - ${entry.score}점</p>`;
+                    });
+                }
+                modal.appendChild(rankingDiv);
+                const actions = document.createElement('div');
+                actions.className = 'modal-actions';
+                                const retry = document.createElement('button');
+                retry.className = 'btn btn-retry';
+                retry.textContent = '🔄 재도전';
+                retry.style.width = '100%';
+                retry.style.minHeight = '44px';
+                retry.onclick = () => {
+                    root.innerHTML = '';
+                    this.resetGame();
+                };
+                const continueBtn = document.createElement('button');
+                continueBtn.className = 'btn btn-continue';
+                continueBtn.textContent = '📺 광고 보고 이어하기';
+                continueBtn.style.width = '100%';
+                continueBtn.style.minHeight = '44px';
+                continueBtn.onclick = () => {
+                    root.innerHTML = '';
+                    this.showAdModal();
+                };
+                const home = document.createElement('button');
+                home.className = 'btn btn-home';
+                home.textContent = '🏠 홈으로';
+                home.style.width = '100%';
+                home.style.minHeight = '44px';
+                home.onclick = () => {
+                    root.innerHTML = '';
+                    window.location.href = 'index.html';
+                };
+                actions.appendChild(retry);
+                actions.appendChild(continueBtn);
+                actions.appendChild(home);
+                modal.appendChild(actions);
+                backdrop.appendChild(modal);
+                root.appendChild(backdrop);
+                backdrop.classList.add('show');
+            }
             showAdModal() {
                 const root = document.getElementById('modalRoot');
                 root.innerHTML = '';
@@ -1722,18 +1723,30 @@
             if (game) game.resetGame();
         }
         function goHome() {
-  if ('vibrate' in navigator) {
-    navigator.vibrate(50);  // 진동 효과 유지
+  // iframe 내부에 있는지 확인
+  if (window.parent !== window) {
+    // iframe 내부인 경우
+    if (parent.resetIframe) {
+      parent.resetIframe();
+    }
+    try {
+      parent.document.querySelector('h1').style.display = 'block';
+      parent.document.getElementById('carousel').style.display = 'block';
+      parent.document.getElementById('user-info').style.display = 'flex';
+      if (parent.playBGM) {
+        parent.playBGM(false);
+      }
+    } catch (e) {
+      console.log('Parent access error:', e);
+    }
+  } else {
+    // 직접 접근한 경우 index.html로 이동
+    window.location.href = 'index.html';
   }
   
-  // iframe 내부에서 실행 중인지 확인
-  if (window.parent && window.parent !== window) {
-    // 부모 페이지(index.html)에 'goHome' 메시지 전송
-    window.parent.postMessage('goHome', '*');
-} else {
-  // iframe이 아닌 직접 실행 중일 때 (테스트 용도)
-  window.location.href = 'index.html';  // index 페이지로 이동
-}
+  if ('vibrate' in navigator) {
+    navigator.vibrate(50);
+  }
 }
         document.addEventListener('DOMContentLoaded', function() {
             createBackgroundEffects();
