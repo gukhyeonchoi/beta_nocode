@@ -1726,18 +1726,38 @@
   // iframe 내부에 있는지 확인
   if (window.parent !== window) {
     // iframe 내부인 경우
-    if (parent.resetIframe) {
-      parent.resetIframe();
-    }
     try {
+      // 게임을 완전히 정리
+      if (game) {
+        game.stopQueueScanLoop();
+        game.clearAllParticles();
+        game.gameRunning = false;
+      }
+      
+      // 부모의 iframe을 숨기거나 제거
+      const iframe = parent.document.getElementById('game-frame');
+      if (iframe) {
+        iframe.style.display = 'none';
+        // 또는 완전히 제거: iframe.remove();
+      }
+      
+      // 부모 페이지 요소들 보이기
       parent.document.querySelector('h1').style.display = 'block';
       parent.document.getElementById('carousel').style.display = 'block';
       parent.document.getElementById('user-info').style.display = 'flex';
+      
       if (parent.playBGM) {
         parent.playBGM(false);
       }
+      
+      // resetIframe이 있다면 호출
+      if (parent.resetIframe) {
+        parent.resetIframe();
+      }
     } catch (e) {
       console.log('Parent access error:', e);
+      // 에러 발생시 그냥 index.html로 이동
+      window.location.href = 'index.html';
     }
   } else {
     // 직접 접근한 경우 index.html로 이동
