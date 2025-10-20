@@ -372,15 +372,19 @@
       border-radius: 8px;
     }
 
-    #hint-button {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      margin: 0;
-      padding: 8px 15px;
-      font-size: 14px;
-      z-index: 15;
-    }
+#hint-button {
+  padding: 8px 15px;
+  font-size: 14px;
+  margin: 0;
+}
+
+#home-button-game {
+  padding: 8px 15px;
+  font-size: 14px;
+  margin: 0;
+  background: linear-gradient(135deg, #6c757d, #545b62);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
 
     #progress-bar {
       width: 250px;
@@ -807,6 +811,7 @@
     <button id="restart-button">다시 시작</button>
     <button id="continue-ad-btn">📺 광고 보고 이어하기</button>
     <button id="show-ranking-gameover" class="btn-ranking">🏆 랭킹 보기</button>
+    <button id="home-button-gameover" class="btn-home">🏠 홈으로</button>
   </div>
   <div id="name-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); align-items:center; justify-content:center; z-index:4000;">
     <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%); padding:24px; border-radius:16px; width:88%; max-width:360px; text-align:center; font-family: 'Pretendard', Arial, sans-serif; box-shadow:0 20px 40px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.2);">
@@ -819,7 +824,7 @@
     </div>
   </div>
   <div id="modal-root"></div>
-  <div class="game-container" id="gameContainer" style="display: none;">
+<div class="game-container" id="gameContainer" style="display: none;">
     <h1>기억력 카드 게임</h1>
     <div id="score">점수: 0</div>
     <div id="timer">남은 시간: 60초</div>
@@ -828,7 +833,10 @@
     <div id="hearts"></div>
     <div id="game-board"></div>
     <div id="message"></div>
-    <button id="hint-button">힌트 (하트 2개)</button>
+    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+      <button id="hint-button">힌트 (하트 2개)</button>
+      <button id="home-button-game" class="btn-home">🏠 홈으로</button>
+    </div>
   </div>
 
   <script type="module">
@@ -856,23 +864,23 @@
       console.error("Firebase initialization failed:", error);
     }
 
-    const CONFIG = {
-      MAX_STAGES: 5,
-      HEARTS_PER_STAGE: [10, 8, 6, 6, 5],
-      TIME_LIMITS: [60, 50, 40, 35, 30],
-      CARD_PAIRS: [6, 6, 6, 8, 8],
-      CARD_FLIP_DURATION: 400,
-      WRONG_CARD_RESET_DELAY: 400,
-      SHAKE_ANIMATION_DURATION: 300,
-      GLOW_ANIMATION_DURATION: 800,
-      MESSAGE_DISPLAY_DURATION: 1500,
-      STAGE_TRANSITION_DELAY: 2500,
-      HEART_GAIN_ANIMATION: 300,
-      HEART_LOSE_ANIMATION: 500,
-      PARTICLE_COUNT: 40,
-      PARTICLE_DISTANCE: { MIN: 20, MAX: 120 },
-      CONFETTI_COUNT: 80,
-      VICTORY_PARTICLE_COUNT: 150,
+const CONFIG = {
+  MAX_STAGES: 5,
+  HEARTS_PER_STAGE: [10, 8, 6, 6, 5],
+  TIME_LIMITS: [60, 50, 40, 35, 30],
+  CARD_PAIRS: [6, 6, 6, 8, 8],
+  CARD_FLIP_DURATION: 400,
+  WRONG_CARD_RESET_DELAY: 400,
+  SHAKE_ANIMATION_DURATION: 300,
+  GLOW_ANIMATION_DURATION: 800,
+  MESSAGE_DISPLAY_DURATION: 1500,
+  STAGE_TRANSITION_DELAY: 2500,
+  HEART_GAIN_ANIMATION: 300,
+  HEART_LOSE_ANIMATION: 500,
+  PARTICLE_COUNT: 20, // 40에서 20으로 감소
+  PARTICLE_DISTANCE: { MIN: 20, MAX: 120 },
+  CONFETTI_COUNT: 40, // 80에서 40으로 감소
+  VICTORY_PARTICLE_COUNT: 80, // 150에서 80으로 감소
       VICTORY_PARTICLE_DISTANCE: { MIN: 50, MAX: 250 },
       PARTICLE_COLORS: ['#ffcccb', '#b2fefa', '#b5f5ec', '#fefcbf', '#fed7aa', '#f5d0fe'],
       SCORE_PER_MATCH: 100,
@@ -1026,11 +1034,41 @@ window.goHome = function() {
     if ('vibrate' in navigator) {
         navigator.vibrate(50);
     }
-    
+    // 게임 정리
+    if (timerInterval) clearInterval(timerInterval);
+    if (sounds.bgm) sounds.bgm.pause();
+
     // iframe 내부에서 실행 중인지 확인 
     if (window.parent && window.parent !== window) {
-        // iframe 안에서 실행 중이면 부모에게 메시지 전송
-        window.parent.postMessage('goHome', '*');
+        try {
+            // iframe 자체를 숨기기
+            const iframes = window.parent.document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                if (iframe.contentWindow === window) {
+                    iframe.style.display = 'none';
+                }
+            });
+            
+            // 부모 페이지 요소들 보이기
+            const h1 = window.parent.document.querySelector('h1');
+            const carousel = window.parent.document.getElementById('carousel');
+            const userInfo = window.parent.document.getElementById('user-info');
+            
+            if (h1) h1.style.display = 'block';
+            if (carousel) carousel.style.display = 'block';
+            if (userInfo) userInfo.style.display = 'flex';
+            
+            if (window.parent.playBGM) {
+                window.parent.playBGM(false);
+            }
+            
+            if (window.parent.resetIframe) {
+                window.parent.resetIframe();
+            }
+        } catch (e) {
+            console.log('Parent access error:', e);
+            window.location.href = 'index.html';
+        }
     } else {
         // 직접 실행 중이면 바로 이동
         window.location.href = 'index.html';
@@ -1274,26 +1312,34 @@ window.goHome = function() {
       }
     }
 
-    function createMatchParticles(x, y) {
-      for (let i = 0; i < CONFIG.PARTICLE_COUNT; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        const size = Math.random() * 10 + 5;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.background = CONFIG.PARTICLE_COLORS[Math.floor(Math.random() * CONFIG.PARTICLE_COLORS.length)];
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * (CONFIG.PARTICLE_DISTANCE.MAX - CONFIG.PARTICLE_DISTANCE.MIN) + CONFIG.PARTICLE_DISTANCE.MIN;
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance;
-        particle.style.setProperty('--dx', `${dx}px`);
-        particle.style.setProperty('--dy', `${dy}px`);
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        if (board) board.appendChild(particle);
-        setTimeout(() => particle.remove(), 700);
-      }
-    }
+function createMatchParticles(x, y) {
+  // 파티클 수를 줄여서 성능 향상
+  const particleCount = Math.min(20, CONFIG.PARTICLE_COUNT);
+  
+  // board가 아닌 body에 추가하여 깜빡임 방지
+  const boardRect = board ? board.getBoundingClientRect() : { left: 0, top: 0 };
+  
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    const size = Math.random() * 10 + 5;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.background = CONFIG.PARTICLE_COLORS[Math.floor(Math.random() * CONFIG.PARTICLE_COLORS.length)];
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * (CONFIG.PARTICLE_DISTANCE.MAX - CONFIG.PARTICLE_DISTANCE.MIN) + CONFIG.PARTICLE_DISTANCE.MIN;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance;
+    particle.style.setProperty('--dx', `${dx}px`);
+    particle.style.setProperty('--dy', `${dy}px`);
+    // board 기준 좌표를 화면 전체 좌표로 변환
+    particle.style.left = `${boardRect.left + x}px`;
+    particle.style.top = `${boardRect.top + y}px`;
+    particle.style.position = 'fixed'; // absolute 대신 fixed 사용
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 700);
+  }
+}
 
     function createConfetti() {
       for (let i = 0; i < CONFIG.CONFETTI_COUNT; i++) {
@@ -1596,7 +1642,18 @@ window.goHome = function() {
         });
       });
       document.getElementById('goHomeBtn').addEventListener('click', window.goHome);
-      if (restartButton) {
+      // 게임 중 홈 버튼
+  const homeButtonGame = document.getElementById('home-button-game');
+  if (homeButtonGame) {
+    homeButtonGame.addEventListener('click', window.goHome);
+  }
+  
+  // 게임 오버 홈 버튼
+  const homeButtonGameOver = document.getElementById('home-button-gameover');
+  if (homeButtonGameOver) {
+    homeButtonGameOver.addEventListener('click', window.goHome);
+  }
+  if (restartButton) {
         restartButton.removeEventListener('click', restartGame);
         restartButton.addEventListener('click', restartGame);
         restartButton.removeEventListener('touchstart', handleRestartTouch);
