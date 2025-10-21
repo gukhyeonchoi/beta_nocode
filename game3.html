@@ -889,7 +889,7 @@
         </div>
 
         <div class="game-controls">
-            <button class="btn" onclick="newGame()">🔄 재시작</button>
+            <button class="btn" onclick="newGame()">🔄 다시 시작</button>
             <button class="btn btn-home" id="goHomeBtn2">🏠 홈으로</button>
         </div>
     </div>
@@ -1106,7 +1106,7 @@
     playerLevel = Math.floor(playerAtk / 50) + 1;
     if (playerLevel > previousPlayerLevel) {
         const levelDiff = playerLevel - previousPlayerLevel;
-        playerHP = Math.min(playerHP + (levelDiff * 5), playerMaxHP);
+        playerHP = Math.min(playerHP + (levelDiff * 10), playerMaxHP);
         previousPlayerLevel = playerLevel;
     }
     document.getElementById('player-level').textContent = `LV.${playerLevel}`;
